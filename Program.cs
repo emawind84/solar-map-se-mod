@@ -874,7 +874,7 @@
                 MyIni _ini = new MyIni();
                 if (!_ini.TryParse(program.Me.CustomData, out resultIniParse))
                     throw new Exception(resultIniParse.ToString());
-                short display = _ini.Get(program.IniSectionKey, "Display").ToInt16();
+                short display = _ini.Get(program.IniSectionKey, "DebugDisplay").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;
