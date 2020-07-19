@@ -27,7 +27,7 @@
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
-        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
+        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update1;
 
         /// <summary>
         /// Defines the terminalCycle.
@@ -139,7 +139,7 @@
                     Position = new Vector3(36384.5f, 0f, 5796384.5f),
                     Resources = "All"
                 }
-                ,
+                /*,
 
                 new CelestialBody
                 {
@@ -152,7 +152,7 @@
                     Position = new Vector3(3199494, 0, 8121258),
                     Resources = "All"
                 }
-                
+                */
             };
             // ---------------------------------------------------------------
             // Celestial bodies - End.
@@ -435,11 +435,11 @@
             public Map(Program program, List<CelestialBody> celestialBodies)
             {
                 this.program = program;
-                StarRadius = program._ini.Get(program.IniSectionKey, "starRadius").ToInt32(100000);
-                string gpspos = program._ini.Get(program.IniSectionKey, "starPosition").ToString();
-
+                Inverted = program._ini.Get(program.IniSectionKey, "Inverted").ToBoolean(false);
+                StarRadius = program._ini.Get(program.IniSectionKey, "StarRadius").ToInt32(100000);
+                string starGpsPos = program._ini.Get(program.IniSectionKey, "StarPosition").ToString();
                 MyWaypointInfo starGps = new MyWaypointInfo();
-                if (MyWaypointInfo.TryParse(gpspos, out starGps))
+                if (MyWaypointInfo.TryParse(starGpsPos, out starGps))
                 {
                     StarPosition = starGps.Coords;
                 }
@@ -492,9 +492,11 @@
                 //CelestialBodies.Sort(SortByType);
             }
 
-            public Vector3 StarPosition { get; } = Vector3.Zero;
+            public Vector3 StarPosition { get; } = new Vector3(0, 0, -100000);
 
             public int StarRadius { get; } = 100000;
+
+            public Boolean Inverted { get; } = false;
 
             /// <summary>
             /// Gets the CelestialBodies.
@@ -516,9 +518,11 @@
                 Vector2 mapCoordinates = Vector2.Zero;
                 mapCoordinates.X = position.X - minX;
                 mapCoordinates.Y = position.Z - minZ;
-                float rangeX = (maxX - minX);
-                float rangeZ = (maxZ - minZ);
+                float rangeX = maxX - minX;
+                float rangeZ = maxZ - minZ;
+
                 mapCoordinates = new Vector2(mapCoordinates.X / rangeX, mapCoordinates.Y / rangeZ);
+                if (Inverted) mapCoordinates = Vector2.One - mapCoordinates;
                 return mapCoordinates;
             }
 
@@ -665,11 +669,11 @@
                 MyIni _ini = new MyIni();
                 if (!_ini.TryParse(block.CustomData, out resultIniParse))
                     throw new Exception(resultIniParse.ToString());
-                short display = _ini.Get(program.IniSectionKey, "display").ToInt16();
-                bool displayGridName = _ini.Get(program.IniSectionKey, "displayGridName").ToBoolean(true);
-                bool displayInfoPanel = _ini.Get(program.IniSectionKey, "displayInfoPanel").ToBoolean(true);
-                bool displaySun = _ini.Get(program.IniSectionKey, "displaySun").ToBoolean(true);
-                short stretchFactor = _ini.Get(program.IniSectionKey, "stretchFactor").ToInt16(1);
+                short display = _ini.Get(program.IniSectionKey, "Display").ToInt16();
+                bool displayGridName = _ini.Get(program.IniSectionKey, "DisplayGridName").ToBoolean(true);
+                bool displayInfoPanel = _ini.Get(program.IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
+                bool displaySun = _ini.Get(program.IniSectionKey, "DisplaySun").ToBoolean(true);
+                short stretchFactor = _ini.Get(program.IniSectionKey, "StretchFactor").ToInt16(1);
 
                 gridWorldPosition = program.Me.GetPosition();
 
@@ -696,13 +700,13 @@
                         infoPanelOffset = new Vector2(180, 0);
                     }
                     Vector2 lcdSize = lcd.SurfaceSize - infoPanelOffset;
-                    Vector2 positionOffset = ((lcdSize - lcdSize * positionMult) / 2f) + infoPanelOffset + _viewport.Position;
-                    Vector2 starPosition = (map.GetMapPosition(map.StarPosition) * lcdSize * positionMult) + positionOffset;
-
+                    Vector2 positionOffset = (lcdSize - lcdSize * positionMult) / 2f + infoPanelOffset + _viewport.Position;
+                    Vector2 starPosition = map.GetMapPosition(map.StarPosition) * lcdSize * positionMult + positionOffset;
+                    
                     // Celestial orbits.
                     foreach (CelestialBody celestialBody in map.CelestialBodies.Where(cb => cb.Type == CelestialType.Planet))
                     {
-                        celestialBody.PlanetPosition = (map.GetMapPosition(celestialBody.Position) * lcdSize * positionMult) + positionOffset;
+                        celestialBody.PlanetPosition = map.GetMapPosition(celestialBody.Position) * lcdSize * positionMult + positionOffset;
                         celestialBody.OrbitSize = new Vector2(Vector2.Distance(celestialBody.PlanetPosition, starPosition)) * 2;
 
                         // Border and fill.
@@ -870,7 +874,7 @@
                 MyIni _ini = new MyIni();
                 if (!_ini.TryParse(program.Me.CustomData, out resultIniParse))
                     throw new Exception(resultIniParse.ToString());
-                short display = _ini.Get(program.IniSectionKey, "display").ToInt16();
+                short display = _ini.Get(program.IniSectionKey, "Display").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;
@@ -921,5 +925,8 @@
             { UpdateFrequency.Update10, UpdateType.Update10 },
             { UpdateFrequency.Update100, UpdateType.Update100 }
         };
+
+        
     }
+
 }
