@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1169
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarMap", "SolarMap.csproj", "{6BB83D9A-E882-4E6E-B5FA-115BB063B6D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BB83D9A-E882-4E6E-B5FA-115BB063B6D0}.Debug|x64.ActiveCfg = Debug|x64
+		{6BB83D9A-E882-4E6E-B5FA-115BB063B6D0}.Debug|x64.Build.0 = Debug|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A38EE6C9-C36C-4CF9-968E-05220C240260}
+	EndGlobalSection
+EndGlobal

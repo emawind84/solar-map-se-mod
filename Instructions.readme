@@ -1,0 +1,16 @@
+﻿R e a d m e
+-----------
+
+Programmable Blocks Custom Data:
+[SolarMap]
+display=0  // surface where to display debug data
+starRadius=100000
+starPosition=GPS:Sun:0:0:-3000000:  // star position in game (GPS format from the game)
+
+LCD Custom Data:
+[SolarMap]
+display=0  // surface where to display the map
+displaySun=true  // show & hide the sun
+displayInfoPanel=true  // show & hide the info panel
+displayGridName=true  // show the grid name near the red dot
+stretchFactor=1  // stretch the map on x axis if too wide
