@@ -27,7 +27,7 @@
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
-        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update1;
+        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update10;
 
         /// <summary>
         /// Defines the terminalCycle.
