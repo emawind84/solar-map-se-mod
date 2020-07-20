@@ -27,7 +27,7 @@
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
-        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update10;
+        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
 
         /// <summary>
         /// Defines the terminalCycle.
@@ -54,15 +54,88 @@
         private readonly string IniSectionKey = "SolarMap";
 
         /// <summary>
+        /// A wrapper for the <see cref="Echo"/> function that adds the log to the stored log.
+        /// This allows the log to be remembered and re-outputted without extra work.
+        /// </summary>
+        public Action<string> EchoR;
+
+        #region Properties
+
+        /// <summary>
+        /// The length of time we have been executing for.
+        /// Measured in milliseconds.
+        /// </summary>
+        int ExecutionTime
+        {
+            get { return (int)((DateTime.Now - currentCycleStartTime).TotalMilliseconds + 0.5); }
+        }
+
+        /// <summary>
+        /// The current percent load of the call.
+        /// </summary>
+        double ExecutionLoad
+        {
+            get { return Runtime.CurrentInstructionCount / Runtime.MaxInstructionCount; }
+        }
+
+        #endregion
+
+        #region Version
+
+        // current script version
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 0, VERSION_REVISION = 1;
+        /// <summary>
+        /// Current script update time.
+        /// </summary>
+        const string VERSION_UPDATE = "2020-07-20";
+        /// <summary>
+        /// A formatted string of the script version.
+        /// </summary>
+        readonly string VERSION_NICE_TEXT = string.Format("v{0}.{1}.{2} ({3})", VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, VERSION_UPDATE);
+
+        #endregion
+
+        #region Format Strings
+
+        /// <summary>
+        /// The format for the text to echo at the start of each call.
+        /// </summary>
+        const string FORMAT_TIM_UPDATE_TEXT = "Solar Map\n{0}\nLast run: #{{0}} at {{1}}";
+
+        #endregion
+
+        #region Script state & storage
+
+        /// The time we started the last cycle at.
+        /// If <see cref="USE_REAL_TIME"/> is <c>true</c>, then it is also used to track
+        /// when the script should next update
+        /// </summary>
+        DateTime currentCycleStartTime;
+        /// The total number of calls this script has had since compilation.
+        /// </summary>
+        long totalCallCount;
+        /// <summary>
+        /// The text to echo at the start of each call.
+        /// </summary>
+        string timUpdateText;
+
+        #endregion
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Program"/> class.
         /// </summary>
         public Program()
         {
 
-            MyIniParseResult result;
-            if (!_ini.TryParse(Me.CustomData, out result))
-                throw new Exception(result.ToString());
+            // init echo wrapper
+            EchoR = log =>
+            {
+                Echo(log);
+            };
 
+            // init settings
+            _ini.TryParse(Me.CustomData);
+            
             // ---------------------------------------------------------------
             // Celestial bodies - Start.
             // ---------------------------------------------------------------
@@ -158,12 +231,18 @@
             // Celestial bodies - End.
             // ---------------------------------------------------------------
 
-            programmableBlock = new ProgrammableBlock(this, FREQUENCY);
+            Runtime.UpdateFrequency = FREQUENCY;
+
+            programmableBlock = new ProgrammableBlock(this);
             shipController = new ShipController(this);
             textPanel = new TextPanel(this, new Map(this, celestialBodies));
 
             terminalCycle = SetTerminalCycle();
 
+            EchoR("Compiled SolarMap " + VERSION_NICE_TEXT);
+
+            // format terminal info text
+            timUpdateText = string.Format(FORMAT_TIM_UPDATE_TEXT, VERSION_NICE_TEXT);
         }
 
         /// <summary>
@@ -224,16 +303,21 @@
         /// <param name="updateType">The updateType<see cref="UpdateType"/>.</param>
         public void Main(string arg, UpdateType updateType)
         {
-            // The update type is binary. Must look it up on Malware's wikia to figure out how to manipulate it.
-            if ((updateType & Update[FREQUENCY]) != 0)
-            {
+            currentCycleStartTime = DateTime.Now;
+            
+            // output terminal info
+            EchoR(string.Format(timUpdateText, ++totalCallCount, currentCycleStartTime.ToString("h:mm:ss tt")));
 
-                if (!terminalCycle.MoveNext())
-                    terminalCycle.Dispose();
+            if (!terminalCycle.MoveNext())
+                terminalCycle.Dispose();
 
-                programmableBlock.Draw();
+            programmableBlock.Draw();
 
-            }
+            int exTime = ExecutionTime;
+            double exLoad = Math.Round(100.0f * ExecutionLoad, 1);
+            string stepText = "all steps";
+            EchoR(string.Format("Completed {0} in {1}ms, {2}% load ({3} instructions)",
+                stepText, exTime, exLoad, Runtime.CurrentInstructionCount));
         }
 
         /// <summary>
@@ -277,7 +361,7 @@
             /// <returns>The <see cref="bool"/>.</returns>
             public bool Run()
             {
-
+                program.EchoR(string.Format("{0} collected #{1}", this.GetType().Name, list.Count, listIndex));
                 if (listIndex < list.Count)
                 {
 
@@ -286,6 +370,7 @@
 
                     if (!IsCorrupt(list[listIndex]))
                     {
+                        program.EchoR(string.Format("Cycling block #{0}", listIndex));
                         OnCycle(list[listIndex]);
                     }
                     else
@@ -302,12 +387,12 @@
                     // Update terminals of this type roughly every ~20 seconds when update frequency is 10.
                     if (listUpdate % (60 / (list.Count + 1)) == 0)
                     {
+                        program.EchoR("Updating collection");
                         program.GridTerminalSystem.GetBlocksOfType(list, Collect);
                     }
 
                     listUpdate++;
                     listIndex = 0;
-
                 }
 
                 return true;
@@ -320,14 +405,16 @@
             /// <returns>The <see cref="bool"/>.</returns>
             public virtual bool Collect(T terminal)
             {
-                return true;
+                return terminal.IsWorking;
             }
 
             /// <summary>
             /// The OnCycle.
             /// </summary>
             /// <param name="terminal">The terminal<see cref="T"/>.</param>
-            public abstract void OnCycle(T terminal);
+            public virtual void OnCycle(T terminal) {
+                program.EchoR(string.Format("Cycling on {0}", terminal.CustomName));
+            }
 
             /// <summary>
             /// Checks if the terminal is null, gone from world, or broken off from grid.
@@ -336,8 +423,11 @@
             /// <returns>The <see cref="bool"/>.</returns>
             public bool IsCorrupt(T block)
             {
-                if (block == null || block.WorldMatrix == MatrixD.Identity) return true;
-                return !(program.GridTerminalSystem.GetBlockWithId(block.EntityId) == block);
+                bool isCorrupt = false;
+                isCorrupt |= block == null || block.WorldMatrix == MatrixD.Identity;
+                isCorrupt |= !(program.GridTerminalSystem.GetBlockWithId(block.EntityId) == block);
+
+                return isCorrupt;
             }
         }
 
@@ -598,22 +688,17 @@
             /// <param name="terminal">The terminal<see cref="IMyShipController"/>.</param>
             public override void OnCycle(IMyShipController terminal)
             {
-                if (terminal.IsWorking)
-                {
-                    if (Main == null)
-                    {
-                        Main = terminal;
-                    }
-                    if (terminal.IsMainCockpit)
-                    {
-                        Main = terminal;
-                    }
-                }
+                base.OnCycle(terminal);
+                Main = terminal;
             }
 
             public override bool Collect(IMyShipController terminal)
             {
-                return base.Collect(terminal);
+                if (IsListEmpty)
+                {
+                    return base.Collect(terminal);
+                }
+                return false;
             }
         }
 
@@ -663,12 +748,11 @@
             /// <param name="lcd">The lcd<see cref="IMyTextPanel"/>.</param>
             public override void OnCycle(IMyTerminalBlock block)
             {
+                base.OnCycle(block);
                 // Call the TryParse method on the custom data. This method will
                 // return false if the source wasn't compatible with the parser.
-                MyIniParseResult resultIniParse;
                 MyIni _ini = new MyIni();
-                if (!_ini.TryParse(block.CustomData, out resultIniParse))
-                    throw new Exception(resultIniParse.ToString());
+                _ini.TryParse(block.CustomData);
                 short display = _ini.Get(program.IniSectionKey, "Display").ToInt16();
                 bool displayGridName = _ini.Get(program.IniSectionKey, "DisplayGridName").ToBoolean(true);
                 bool displayInfoPanel = _ini.Get(program.IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
@@ -821,10 +905,14 @@
             /// <returns>The <see cref="bool"/>.</returns>
             public override bool Collect(IMyTerminalBlock terminal)
             {
+                //program.EchoR(string.Format("Collecting {0}", terminal.CustomName));
                 // Collect this.
-                bool isSolarmap = terminal.IsSameConstructAs(program.Me) && terminal.CustomData.Contains("[SolarMap]") && (terminal is IMyTextPanel || terminal is IMyTextSurfaceProvider);
-                isSolarmap &= terminal.IsWorking && terminal != program.Me;
-                
+                bool isSolarmap = terminal.IsSameConstructAs(program.Me) 
+                    && terminal.CustomData.Contains("[SolarMap]") 
+                    && (terminal is IMyTextPanel || terminal is IMyTextSurfaceProvider)
+                    && terminal.IsWorking
+                    && terminal != program.Me;
+
                 // Set the content type of this terminal to script.
                 if (isSolarmap)
                 {
@@ -865,16 +953,10 @@
             /// </summary>
             /// <param name="program">The program<see cref="Program"/>.</param>
             /// <param name="updateFrequency">The updateFrequency<see cref="UpdateFrequency"/>.</param>
-            public ProgrammableBlock(Program program, UpdateFrequency updateFrequency = UpdateFrequency.Update1)
+            public ProgrammableBlock(Program program)
             {
                 this.program = program;
-                program.Runtime.UpdateFrequency = updateFrequency;
-
-                MyIniParseResult resultIniParse;
-                MyIni _ini = new MyIni();
-                if (!_ini.TryParse(program.Me.CustomData, out resultIniParse))
-                    throw new Exception(resultIniParse.ToString());
-                short display = _ini.Get(program.IniSectionKey, "DebugDisplay").ToInt16();
+                short display = program._ini.Get(program.IniSectionKey, "DebugDisplay").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;
@@ -915,17 +997,6 @@
                 }
             }
         }
-
-        /// <summary>
-        /// Defines the Update.
-        /// </summary>
-        private readonly Dictionary<UpdateFrequency, UpdateType> Update = new Dictionary<UpdateFrequency, UpdateType>
-        {
-            { UpdateFrequency.Update1, UpdateType.Update1 },
-            { UpdateFrequency.Update10, UpdateType.Update10 },
-            { UpdateFrequency.Update100, UpdateType.Update100 }
-        };
-
         
     }
 
