@@ -24,6 +24,100 @@
     /// </summary>
     internal partial class Program : MyGridProgram
     {
+
+        #region CelestialBodies
+
+        private List<CelestialBody> celestialBodies = new List<CelestialBody>()
+        {
+            new CelestialBody
+            {
+                Name = "Helion I",
+                Radius = 60000,
+                Gravity = 1,
+                HasAtmosphere = true,
+                Oxygen = Oxygen.High,
+                Type = CelestialType.Planet,
+                Position = new Vector3(0.5f, 0, 0.5f),
+                Resources = "All"
+            },
+
+            new CelestialBody
+            {
+                Name = "Xindus",
+                Radius = 9500,
+                Gravity = 0.25f,
+                HasAtmosphere = false,
+                Oxygen = Oxygen.None,
+                Type = CelestialType.Moon,
+                Position = new Vector3(16384.5f, 0f, -113615.5f),
+                Resources = "All"
+            },
+
+            new CelestialBody
+            {
+                Name = "Helion II",
+                Radius = 60000,
+                Gravity = 0.9f,
+                HasAtmosphere = true,
+                Oxygen = Oxygen.None,
+                Type = CelestialType.Planet,
+                Position = new Vector3(1031072.5f, 0f, 1631072.5f),
+                Resources = "All"
+            },
+
+            new CelestialBody
+            {
+                Name = "Hiigara",
+                Radius = 9500,
+                Gravity = 0.25f,
+                HasAtmosphere = true,
+                Oxygen = Oxygen.None,
+                Type = CelestialType.Moon,
+                Position = new Vector3(916384.5f, 0f, 1616384.5f),
+                Resources = "All"
+            },
+
+            new CelestialBody
+            {
+                Name = "Helion III",
+                Radius = 60000,
+                Gravity = 1.1f,
+                HasAtmosphere = true,
+                Oxygen = Oxygen.Low,
+                Type = CelestialType.Planet,
+                Position = new Vector3(131072.5f, 0f, 5731072.5f),
+                Resources = "All"
+            },
+
+            new CelestialBody
+            {
+                Name = "Miranda",
+                Radius = 9500,
+                Gravity = 0.25f,
+                HasAtmosphere = true,
+                Oxygen = Oxygen.None,
+                Type = CelestialType.Moon,
+                Position = new Vector3(36384.5f, 0f, 5796384.5f),
+                Resources = "All"
+            }
+            /*,
+
+            new CelestialBody
+            {
+                Name = "Unknown",
+                Radius = 120000,
+                Gravity = 1,
+                HasAtmosphere = false,
+                Oxygen = Oxygen.None,
+                Type = CelestialType.Planet,
+                Position = new Vector3(3199494, 0, 8121258),
+                Resources = "All"
+            }
+            */
+        };
+
+        #endregion
+
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
@@ -136,101 +230,6 @@
             // init settings
             _ini.TryParse(Me.CustomData);
             
-            // ---------------------------------------------------------------
-            // Celestial bodies - Start.
-            // ---------------------------------------------------------------
-            List<CelestialBody> celestialBodies = new List<CelestialBody>()
-            {
-                new CelestialBody
-                {
-                    Name = "Helion I",
-                    Radius = 60000,
-                    Gravity = 1,
-                    HasAtmosphere = true,
-                    Oxygen = Oxygen.High,
-                    Type = CelestialType.Planet,
-                    Position = new Vector3(0.5f, 0, 0.5f),
-                    Resources = "All"
-                },
-
-                new CelestialBody
-                {
-                    Name = "Xindus",
-                    Radius = 9500,
-                    Gravity = 0.25f,
-                    HasAtmosphere = false,
-                    Oxygen = Oxygen.None,
-                    Type = CelestialType.Moon,
-                    Position = new Vector3(16384.5f, 0f, -113615.5f),
-                    Resources = "All"
-                },
-
-                new CelestialBody
-                {
-                    Name = "Helion II",
-                    Radius = 60000,
-                    Gravity = 0.9f,
-                    HasAtmosphere = true,
-                    Oxygen = Oxygen.None,
-                    Type = CelestialType.Planet,
-                    Position = new Vector3(1031072.5f, 0f, 1631072.5f),
-                    Resources = "All"
-                },
-
-                new CelestialBody
-                {
-                    Name = "Hiigara",
-                    Radius = 9500,
-                    Gravity = 0.25f,
-                    HasAtmosphere = true,
-                    Oxygen = Oxygen.None,
-                    Type = CelestialType.Moon,
-                    Position = new Vector3(916384.5f, 0f, 1616384.5f),
-                    Resources = "All"
-                },
-
-                new CelestialBody
-                {
-                    Name = "Helion III",
-                    Radius = 60000,
-                    Gravity = 1.1f,
-                    HasAtmosphere = true,
-                    Oxygen = Oxygen.Low,
-                    Type = CelestialType.Planet,
-                    Position = new Vector3(131072.5f, 0f, 5731072.5f),
-                    Resources = "All"
-                },
-
-                new CelestialBody
-                {
-                    Name = "Miranda",
-                    Radius = 9500,
-                    Gravity = 0.25f,
-                    HasAtmosphere = true,
-                    Oxygen = Oxygen.None,
-                    Type = CelestialType.Moon,
-                    Position = new Vector3(36384.5f, 0f, 5796384.5f),
-                    Resources = "All"
-                }
-                /*,
-
-                new CelestialBody
-                {
-                    Name = "Unknown",
-                    Radius = 120000,
-                    Gravity = 1,
-                    HasAtmosphere = false,
-                    Oxygen = Oxygen.None,
-                    Type = CelestialType.Planet,
-                    Position = new Vector3(3199494, 0, 8121258),
-                    Resources = "All"
-                }
-                */
-            };
-            // ---------------------------------------------------------------
-            // Celestial bodies - End.
-            // ---------------------------------------------------------------
-
             Runtime.UpdateFrequency = FREQUENCY;
 
             programmableBlock = new ProgrammableBlock(this);
@@ -554,35 +553,11 @@
                     
                 }
 
-                foreach (CelestialBody celestialBody in CelestialBodies)
-                {
-
-                    // Set planet position relative to a 2D surface.
-                    //celestialBody.MapPosition = GetMapPosition(celestialBody.Position);
-
-                    // Find nearest planet.
-                    if (celestialBody.Type == CelestialType.Moon)
-                    {
-                        float distance = 0;
-                        foreach (CelestialBody planet in CelestialBodies)
-                        {
-                            if (planet.Type == CelestialType.Planet)
-                            {
-                                float dist = Vector3.Distance(celestialBody.Position, planet.Position);
-                                if (dist < distance)
-                                {
-                                    distance = dist;
-                                }
-                            }
-                        }
-                    }
-                }
-
                 CelestialBodies.Sort(SortByDistance);
                 //CelestialBodies.Sort(SortByType);
             }
 
-            public Vector3 StarPosition { get; } = new Vector3(0, 0, -100000);
+            public Vector3 StarPosition { get; } = new Vector3(0, 0, -2000000);
 
             public int StarRadius { get; } = 100000;
 
@@ -757,6 +732,7 @@
                 bool displayGridName = _ini.Get(program.IniSectionKey, "DisplayGridName").ToBoolean(true);
                 bool displayInfoPanel = _ini.Get(program.IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
                 bool displaySun = _ini.Get(program.IniSectionKey, "DisplaySun").ToBoolean(true);
+                bool displayOrbit = _ini.Get(program.IniSectionKey, "DisplayOrbit").ToBoolean(true);
                 short stretchFactor = _ini.Get(program.IniSectionKey, "StretchFactor").ToInt16(1);
 
                 gridWorldPosition = program.Me.GetPosition();
@@ -787,17 +763,20 @@
                     Vector2 positionOffset = (lcdSize - lcdSize * positionMult) / 2f + infoPanelOffset + _viewport.Position;
                     Vector2 starPosition = map.GetMapPosition(map.StarPosition) * lcdSize * positionMult + positionOffset;
                     
-                    // Celestial orbits.
                     foreach (CelestialBody celestialBody in map.CelestialBodies.Where(cb => cb.Type == CelestialType.Planet))
                     {
                         celestialBody.PlanetPosition = map.GetMapPosition(celestialBody.Position) * lcdSize * positionMult + positionOffset;
                         celestialBody.OrbitSize = new Vector2(Vector2.Distance(celestialBody.PlanetPosition, starPosition)) * 2;
 
-                        // Border and fill.
-                        frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize + 3, lcd.ScriptForegroundColor));
-                        frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize, lcd.ScriptBackgroundColor));
+                        // Celestial orbits.
+                        if (displayOrbit)
+                        {
+                            // Border and fill.
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize + 3, lcd.ScriptForegroundColor));
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize, lcd.ScriptBackgroundColor));
+                        }
                     }
-
+                    
                     // Celestial bodies.
                     foreach (CelestialBody celestialBody in map.CelestialBodies.Where(cb => cb.Type == CelestialType.Planet))
                     {
@@ -842,7 +821,6 @@
                         {
                             maxColumns = 1;
                         }
-                        // Information panel background.
                         int infoPanelPerColumn = 6;
                         if (lcd.SurfaceSize.Y < 512)
                         {
@@ -853,6 +831,7 @@
                             infoPanelPerColumn = 12;
                         }
 
+                        // Information panel background.
                         int xOffsetIncrement = 190;
                         for (int i = 0; i < Math.Min(Math.Ceiling(map.CelestialInfo.Count * 1f / infoPanelPerColumn), maxColumns); i++)
                         {

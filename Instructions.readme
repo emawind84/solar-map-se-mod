@@ -28,7 +28,8 @@ StarPosition=GPS:Sun:0:0:-3000000: // star position in game (GPS format from the
 LCD block or terminal with multi LCD:
 [SolarMap]
 Display=0 // surface where to display the map
-DisplaySun=true // show & hide the sun
-DisplayInfoPanel=true // show & hide the info panel
+DisplaySun=true // show the sun
+DisplayInfoPanel=true // show the info panel
 DisplayGridName=true // show the grid name near the red dot
+DisplayOrbit=true // show planets orbit
 StretchFactor=1 // stretch the map on x axis if too wide
