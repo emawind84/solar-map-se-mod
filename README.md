@@ -27,7 +27,7 @@ You find a guide of how to set up the planet list in the original description of
 
 	[SolarMap]
 	DebugDisplay=0                      // Surface where to display debug data
-	StarRadius=100000                   // Star radius (try to not exagerate here, is more like a red dwarf)
+	StarRadius=100000                   // Star radius (try not to exagerate here, is more like a red dwarf)
 	StarPosition=GPS:Sun:0:0:-3000000:  // The Star position in game (Use game's GPS format)
 
 	*You need to recompile the script to update the settings
@@ -42,3 +42,7 @@ You find a guide of how to set up the planet list in the original description of
 	DisplayGridName=true   // show the grid name near the red dot
 	DisplayOrbit=true      // show planets orbit
 	StretchFactor=1        // stretch the map on x axis if too wide
+
+
+### Source code 
+https://github.com/emawind84/solar-map-se-mod
