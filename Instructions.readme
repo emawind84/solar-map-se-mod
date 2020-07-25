@@ -19,8 +19,8 @@ The following settings can be added to the Custom Data of the block:
 
 Programmable Blocks:
 [SolarMap]
-DebugDisplay=0 // surface where to display debug data
-StarRadius=100000
+DebugDisplay=0                     // surface where to display debug data
+StarRadius=100000                  // The star radius in meters (yes is a tiny star)
 StarPosition=GPS:Sun:0:0:-3000000: // star position in game (GPS format from the game)
 
 * You need to recompile the script to update the settings
