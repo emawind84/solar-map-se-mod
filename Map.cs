@@ -45,9 +45,9 @@ namespace IngameScript
             public Map(Program program, List<CelestialBody> celestialBodies)
             {
                 this.program = program;
-                Inverted = program._ini.Get(program.IniSectionKey, "Inverted").ToBoolean(false);
-                StarRadius = program._ini.Get(program.IniSectionKey, "StarRadius").ToInt32(100000);
-                string starGpsPos = program._ini.Get(program.IniSectionKey, "StarPosition").ToString();
+                Inverted = program._ini.Get(IniSectionKey, "Inverted").ToBoolean(false);
+                StarRadius = program._ini.Get(IniSectionKey, "StarRadius").ToInt32(100000);
+                string starGpsPos = program._ini.Get(IniSectionKey, "StarPosition").ToString();
                 MyWaypointInfo starGps = new MyWaypointInfo();
                 if (MyWaypointInfo.TryParse(starGpsPos, out starGps))
                 {

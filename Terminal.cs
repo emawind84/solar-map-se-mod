@@ -68,7 +68,6 @@ namespace IngameScript
             if (!IsListEmpty)
             {
                 listIndex = listIndex % list.Count;
-                EchoR(string.Format("Collected #{1} {0} ", this.GetType().Name, list.Count, listIndex));
 
                 if (!IsCorrupt(list[listIndex]))
                 {

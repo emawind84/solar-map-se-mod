@@ -118,6 +118,8 @@
 
         #endregion
 
+        const string IniSectionKey = "SolarMap";
+
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
@@ -144,8 +146,6 @@
         private readonly TextPanel textPanel;
 
         private MyIni _ini = new MyIni();
-
-        private readonly string IniSectionKey = "SolarMap";
 
         /// <summary>
         /// A wrapper for the <see cref="Echo"/> function that adds the log to the stored log.
@@ -183,11 +183,11 @@
         
         const string SCRIPT_NAME = "ED's SolarMap";
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 1, VERSION_REVISION = 0;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 1, VERSION_REVISION = 1;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2020-07-24";
+        const string VERSION_UPDATE = "2020-08-01";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
@@ -360,7 +360,7 @@
             public ProgrammableBlock(Program program)
             {
                 this.program = program;
-                short display = program._ini.Get(program.IniSectionKey, "DebugDisplay").ToInt16();
+                short display = program._ini.Get(IniSectionKey, "DebugDisplay").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;

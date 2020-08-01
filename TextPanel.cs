@@ -73,12 +73,12 @@ namespace IngameScript
                 // return false if the source wasn't compatible with the parser.
                 MyIni _ini = new MyIni();
                 _ini.TryParse(block.CustomData);
-                short display = _ini.Get(program.IniSectionKey, "Display").ToInt16();
-                bool displayGridName = _ini.Get(program.IniSectionKey, "DisplayGridName").ToBoolean(true);
-                bool displayInfoPanel = _ini.Get(program.IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
-                bool displaySun = _ini.Get(program.IniSectionKey, "DisplaySun").ToBoolean(true);
-                bool displayOrbit = _ini.Get(program.IniSectionKey, "DisplayOrbit").ToBoolean(true);
-                short stretchFactor = _ini.Get(program.IniSectionKey, "StretchFactor").ToInt16(1);
+                short display = _ini.Get(IniSectionKey, "Display").ToInt16();
+                bool displayGridName = _ini.Get(IniSectionKey, "DisplayGridName").ToBoolean(true);
+                bool displayInfoPanel = _ini.Get(IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
+                bool displaySun = _ini.Get(IniSectionKey, "DisplaySun").ToBoolean(true);
+                bool displayOrbit = _ini.Get(IniSectionKey, "DisplayOrbit").ToBoolean(true);
+                short stretchFactor = _ini.Get(IniSectionKey, "StretchFactor").ToInt16(1);
 
                 gridWorldPosition = program.Me.GetPosition();
 
@@ -91,6 +91,9 @@ namespace IngameScript
                 {
                     lcd = block as IMyTextPanel;
                 }
+
+                lcd.ContentType = ContentType.SCRIPT;
+                lcd.Script = null;
 
                 RectangleF _viewport = new RectangleF((lcd.TextureSize - lcd.SurfaceSize) / 2f, lcd.SurfaceSize);
 
@@ -229,26 +232,14 @@ namespace IngameScript
             /// <returns>The <see cref="bool"/>.</returns>
             public override bool Collect(IMyTerminalBlock terminal)
             {
-                //program.EchoR(string.Format("Collecting {0}", terminal.CustomName));
                 // Collect this.
                 bool isSolarmap = terminal.IsSameConstructAs(program.Me)
-                    && terminal.CustomData.Contains("[SolarMap]")
+                    && MyIni.HasSection(terminal.CustomData, IniSectionKey)
                     && (terminal is IMyTextPanel || terminal is IMyTextSurfaceProvider)
                     && terminal.IsWorking
                     && terminal != program.Me;
 
-                // Set the content type of this terminal to script.
-                if (isSolarmap)
-                {
-                    if (terminal is IMyTextSurfaceProvider)
-                    {
-                        (terminal as IMyTextSurfaceProvider).GetSurface(0).ContentType = ContentType.SCRIPT;
-                    }
-                    else if (terminal is IMyTextPanel)
-                    {
-                        (terminal as IMyTextPanel).ContentType = ContentType.SCRIPT;
-                    }
-                }
+                //program.EchoR(string.Format("Collecting {0} {1}", terminal.CustomName, isSolarmap));
 
                 // Return.
                 return isSolarmap;
