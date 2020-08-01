@@ -68,7 +68,7 @@
     <AdditionalFiles Include="MDK\whitelist.cache" />
     <Compile Include="ShipController.cs" />
     <Compile Include="Terminal.cs" />
-    <Compile Include="TextPanel.cs" />
+    <Compile Include="DisplayTerminal.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">

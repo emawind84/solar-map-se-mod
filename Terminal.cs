@@ -28,12 +28,14 @@ namespace IngameScript
         /// <summary>
         /// Log for Terminal class
         /// </summary>
-        public Action<string> EchoR = text => { };
+        protected Action<string> EchoR = text => { };
         /// <summary>
         /// Defines the program.
         /// </summary>
         protected Program program;
 
+        protected int[] RefreshCount;
+        
         /// <summary>
         /// Defines the list.
         /// </summary>
@@ -51,7 +53,7 @@ namespace IngameScript
         public Terminal(Program program)
         {
             this.program = program;
-            //this.EchoR = program.EchoR;
+            this.EchoR = program.EchoR;
         }
 
         /// <summary>
@@ -71,12 +73,14 @@ namespace IngameScript
 
                 if (!IsCorrupt(list[listIndex]))
                 {
-                    EchoR(string.Format("Cycling block #{0}", listIndex));
+                    EchoR(string.Format("Cycling block #{0}", list[listIndex].CustomName));
                     OnCycle(list[listIndex]);
+                    RefreshCount[listIndex]++;
                 }
                 else
                 {
                     list.Remove(list[listIndex]);
+                    UpdateRefreshCount();
                 }
                 listIndex++;
             }
@@ -85,6 +89,7 @@ namespace IngameScript
             {
                 EchoR("Updating collection");
                 program.GridTerminalSystem.GetBlocksOfType(list, Collect);
+                UpdateRefreshCount();
                 listUpdate = 0;
             }
 
@@ -124,6 +129,17 @@ namespace IngameScript
             isCorrupt |= !(program.GridTerminalSystem.GetBlockWithId(block.EntityId) == block);
 
             return isCorrupt;
+        }
+
+        private void UpdateRefreshCount()
+        {
+            RefreshCount = new int[list.Count()];
+        }
+
+        protected int GetRefreshCount(IMyTerminalBlock blk)
+        {
+            var idx = list.FindIndex(block => block == blk);
+            return RefreshCount[idx];
         }
     }
 }

@@ -23,9 +23,9 @@ namespace IngameScript
     {
 
         /// <summary>
-        /// Defines the <see cref="TextPanel" />.
+        /// Defines the <see cref="DisplayTerminal" />.
         /// </summary>
-        private class TextPanel : Terminal<IMyTerminalBlock>
+        private class DisplayTerminal : Terminal<IMyTerminalBlock>
         {
             /// <summary>
             /// Defines the infoSize.
@@ -52,12 +52,14 @@ namespace IngameScript
             /// </summary>
             private readonly Map map;
 
+            bool odd = false;
+
             /// <summary>
-            /// Initializes a new instance of the <see cref="TextPanel"/> class.
+            /// Initializes a new instance of the <see cref="DisplayTerminal"/> class.
             /// </summary>
             /// <param name="program">The program<see cref="Program"/>.</param>
             /// <param name="map">The map<see cref="Map"/>.</param>
-            public TextPanel(Program program, Map map) : base(program)
+            public DisplayTerminal(Program program, Map map) : base(program)
             {
                 this.map = map;
             }
@@ -78,10 +80,11 @@ namespace IngameScript
                 bool displayInfoPanel = _ini.Get(IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
                 bool displaySun = _ini.Get(IniSectionKey, "DisplaySun").ToBoolean(true);
                 bool displayOrbit = _ini.Get(IniSectionKey, "DisplayOrbit").ToBoolean(true);
-                short stretchFactor = _ini.Get(IniSectionKey, "StretchFactor").ToInt16(1);
+                float stretchFactor = _ini.Get(IniSectionKey, "StretchFactor").ToSingle(1);
+                float stretchFactorV = _ini.Get(IniSectionKey, "StretchFactorV").ToSingle(1);
+                float stretchFactorH = _ini.Get(IniSectionKey, "StretchFactorH").ToSingle(stretchFactor);
 
                 gridWorldPosition = program.Me.GetPosition();
-
                 IMyTextSurface lcd;
                 if (block is IMyTextSurfaceProvider)
                 {
@@ -93,18 +96,21 @@ namespace IngameScript
                 }
 
                 lcd.ContentType = ContentType.SCRIPT;
-                lcd.Script = null;
+                lcd.Script = "";
 
                 RectangleF _viewport = new RectangleF((lcd.TextureSize - lcd.SurfaceSize) / 2f, lcd.SurfaceSize);
-
+                EchoR("" + lcd.ScriptBackgroundColor);
                 using (MySpriteDrawFrame frame = lcd.DrawFrame())
                 {
+                    if (GetRefreshCount(block) % 2 == 0) frame.Add(new MySprite());
+                    
+                    //frame.Add(new MySprite(SpriteType.TEXTURE, "SquareSimple", _viewport.Position + lcd.SurfaceSize / 2, lcd.SurfaceSize, new Color(rnd.Next(256), rnd.Next(256), rnd.Next(256))));
 
-                    Vector2 positionMult = new Vector2(0.8f / stretchFactor, 0.8f);
+                    Vector2 positionMult = new Vector2(0.8f / stretchFactorH, 0.8f / stretchFactorV);
                     Vector2 infoPanelOffset = Vector2.Zero;
                     if (displayInfoPanel)
                     {
-                        positionMult = new Vector2(0.6f / stretchFactor, 0.8f);
+                        positionMult = new Vector2(0.6f / stretchFactorH, 0.8f / stretchFactorV);
                         infoPanelOffset = new Vector2(180, 0);
                     }
                     Vector2 lcdSize = lcd.SurfaceSize - infoPanelOffset;
@@ -183,7 +189,7 @@ namespace IngameScript
                         int xOffsetIncrement = 190;
                         for (int i = 0; i < Math.Min(Math.Ceiling(map.CelestialInfo.Count * 1f / infoPanelPerColumn), maxColumns); i++)
                         {
-                            frame.Add(new MySprite(SpriteType.TEXTURE, "SquareSimple", new Vector2(95 + i * xOffsetIncrement, 256) + _viewport.Position, new Vector2(183, 505), new Color(0, 0, 0, 50)));
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "SquareSimple", new Vector2(95 + i * xOffsetIncrement, lcd.SurfaceSize.Y / 2) + _viewport.Position, new Vector2(183, lcd.SurfaceSize.Y - 5), new Color(0, 0, 0, 50)));
                         }
 
                         // Information panel content.

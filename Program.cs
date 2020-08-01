@@ -143,7 +143,7 @@
         /// <summary>
         /// Defines the textPanel.
         /// </summary>
-        private readonly TextPanel textPanel;
+        private readonly DisplayTerminal textPanel;
 
         private MyIni _ini = new MyIni();
 
@@ -241,7 +241,7 @@
 
             programmableBlock = new ProgrammableBlock(this);
             shipController = new ShipController(this);
-            textPanel = new TextPanel(this, new Map(this, celestialBodies));
+            textPanel = new DisplayTerminal(this, new Map(this, celestialBodies));
 
             terminalCycle = SetTerminalCycle();
 
