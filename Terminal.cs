@@ -32,15 +32,16 @@ namespace IngameScript
         /// <summary>
         /// Defines the program.
         /// </summary>
-        protected Program program;
-
-        protected int[] RefreshCount;
+        protected Program Program;
         
+        /// <summary>
+        /// Array containing how many times a specific block has been processed
+        /// </summary>
+        private int[] refreshCount;
         /// <summary>
         /// Defines the list.
         /// </summary>
         private readonly List<T> list = new List<T>();
-
         /// <summary>
         /// Defines the listIndex, listUpdate...
         /// </summary>
@@ -49,10 +50,10 @@ namespace IngameScript
         /// <summary>
         /// Initializes a new instance of the <see cref="Terminal{T}"/> class.
         /// </summary>
-        /// <param name="program">The program<see cref="Program"/>.</param>
+        /// <param name="program">The program<see cref="IngameScript.Program"/>.</param>
         public Terminal(Program program)
         {
-            this.program = program;
+            this.Program = program;
             //this.EchoR = program.EchoR;
         }
 
@@ -75,7 +76,7 @@ namespace IngameScript
                 {
                     EchoR(string.Format("Cycling block #{0}", list[listIndex].CustomName));
                     OnCycle(list[listIndex]);
-                    RefreshCount[listIndex]++;
+                    refreshCount[listIndex]++;
                 }
                 else
                 {
@@ -88,7 +89,7 @@ namespace IngameScript
             if (listUpdate % 10 == 0)
             {
                 EchoR("Updating collection");
-                program.GridTerminalSystem.GetBlocksOfType(list, Collect);
+                Program.GridTerminalSystem.GetBlocksOfType(list, Collect);
                 UpdateRefreshCount();
                 listUpdate = 0;
             }
@@ -126,20 +127,20 @@ namespace IngameScript
         {
             bool isCorrupt = false;
             isCorrupt |= block == null || block.WorldMatrix == MatrixD.Identity;
-            isCorrupt |= !(program.GridTerminalSystem.GetBlockWithId(block.EntityId) == block);
+            isCorrupt |= !(Program.GridTerminalSystem.GetBlockWithId(block.EntityId) == block);
 
             return isCorrupt;
-        }
-
-        private void UpdateRefreshCount()
-        {
-            RefreshCount = new int[list.Count()];
         }
 
         protected int GetRefreshCount(IMyTerminalBlock blk)
         {
             var idx = list.FindIndex(block => block == blk);
-            return RefreshCount[idx];
+            return refreshCount[idx];
+        }
+
+        private void UpdateRefreshCount()
+        {
+            refreshCount = new int[list.Count()];
         }
     }
 }

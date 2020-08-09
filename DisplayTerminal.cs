@@ -85,14 +85,14 @@ namespace IngameScript
                 int mapRadius = _ini.Get(IniSectionKey, "MapRadius").ToInt16();
                 bool followGrid = _ini.Get(IniSectionKey, "FollowGrid").ToBoolean();
                 Vector3 mapCenterPosition = Vector3.Zero;
-                if (followGrid) mapCenterPosition = program.Me.CubeGrid.GetPosition();
+                if (followGrid) mapCenterPosition = Program.Me.CubeGrid.GetPosition();
                 MyWaypointInfo centerPosition;
                 if (MyWaypointInfo.TryParse(_ini.Get(IniSectionKey, "CenterPosition").ToString(), out centerPosition))
                 {
                     mapCenterPosition = centerPosition.Coords;
                 }
 
-                gridWorldPosition = program.Me.GetPosition();
+                gridWorldPosition = Program.Me.GetPosition();
                 IMyTextSurface lcd;
                 if (block is IMyTextSurfaceProvider)
                 {
@@ -156,11 +156,11 @@ namespace IngameScript
                     // Grid dot or arrow.
                     {
                         var position = lcdSize * map.GetMapPosition(gridWorldPosition, mapCenterPosition, mapRadius) * positionMult + positionOffset;
-                        if (program.shipController?.Main != null && !program.Me.CubeGrid.IsStatic)
+                        if (Program.shipController?.Main != null && !Program.Me.CubeGrid.IsStatic)
                         {
                             // float rotation = -(float)(Math.Acos(program.shipController.Main.WorldMatrix.Forward.Z) + (Math.PI / 2f));
                             float azimuth, elevation;
-                            Vector3.GetAzimuthAndElevation(program.shipController.Main.WorldMatrix.Forward, out azimuth, out elevation);
+                            Vector3.GetAzimuthAndElevation(Program.shipController.Main.WorldMatrix.Forward, out azimuth, out elevation);
                             frame.Add(new MySprite(SpriteType.TEXTURE, "AH_BoreSight", position, new Vector2(lcdSize.Y * 0.05f + 3), Color.Red, null, rotation: -azimuth + (float)(Math.PI / 2f)));
                         }
                         else
@@ -169,7 +169,7 @@ namespace IngameScript
                         }
                         if (displayGridName)
                         {
-                            frame.Add(new MySprite(SpriteType.TEXT, program.Me.CubeGrid.DisplayName, position - 10, null, Color.Red, null, TextAlignment.RIGHT, 0.5f));
+                            frame.Add(new MySprite(SpriteType.TEXT, Program.Me.CubeGrid.DisplayName, position - 10, null, Color.Red, null, TextAlignment.RIGHT, 0.5f));
                         }
                     }
 
@@ -250,11 +250,11 @@ namespace IngameScript
             public override bool Collect(IMyTerminalBlock terminal)
             {
                 // Collect this.
-                bool isSolarmap = terminal.IsSameConstructAs(program.Me)
+                bool isSolarmap = terminal.IsSameConstructAs(Program.Me)
                     && MyIni.HasSection(terminal.CustomData, IniSectionKey)
                     && (terminal is IMyTextPanel || terminal is IMyTextSurfaceProvider)
                     && terminal.IsWorking
-                    && terminal != program.Me;
+                    && terminal != Program.Me;
 
                 //program.EchoR(string.Format("Collecting {0} {1}", terminal.CustomName, isSolarmap));
 

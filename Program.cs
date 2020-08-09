@@ -118,7 +118,7 @@
 
         #endregion
 
-        const string IniSectionKey = "SolarMap";
+        string IniSectionKey = "SolarMap";
 
         const string GPSBroadcastTag = "SHUTTLE_STATE";
 
