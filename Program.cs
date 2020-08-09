@@ -120,26 +120,38 @@
 
         const string IniSectionKey = "SolarMap";
 
+        const string GPSBroadcastTag = "SHUTTLE_STATE";
+
+        /// <summary>
+        /// whether to use real time (second between calls) or pure UpdateFrequency
+        /// for update frequency
+        /// </summary>
+        readonly bool USE_REAL_TIME = false;
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
         private const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
-
+        /// <summary>
+        /// How often the script should update in milliseconds
+        /// </summary>
+        const int UPDATE_REAL_TIME = 1000;
+        /// <summary>
+        /// The maximum run time of the script per call.
+        /// Measured in milliseconds.
+        /// </summary>
+        const double MAX_RUN_TIME = 35;
         /// <summary>
         /// Defines the terminalCycle.
         /// </summary>
         private readonly IEnumerator<bool> terminalCycle;
-
         /// <summary>
         /// Defines the programmableBlock.
         /// </summary>
         private readonly ProgrammableBlock programmableBlock;
-
         /// <summary>
         /// Defines the shipController.
         /// </summary>
         private readonly ShipController shipController;
-
         /// <summary>
         /// Defines the textPanel.
         /// </summary>
@@ -152,11 +164,8 @@
         /// This allows the log to be remembered and re-outputted without extra work.
         /// </summary>
         public Action<string> EchoR;
-        /// <summary>
-        /// Stores the output of Echo so we can effectively ignore some calls
-        /// without overwriting it.
-        /// </summary>
-        public StringBuilder echoOutput = new StringBuilder();
+        
+        Map CelestialMap { get; set; }
 
         #region Properties
 
@@ -211,6 +220,11 @@
         /// when the script should next update
         /// </summary>
         DateTime currentCycleStartTime;
+        /// <summary>
+        /// The time to wait before starting the next cycle.
+        /// Only used if <see cref="USE_REAL_TIME"/> is <c>true</c>.
+        /// </summary>
+        TimeSpan cycleUpdateWaitTime = new TimeSpan(0, 0, 0, 0, UPDATE_REAL_TIME);
         /// The total number of calls this script has had since compilation.
         /// </summary>
         long totalCallCount;
@@ -218,6 +232,21 @@
         /// The text to echo at the start of each call.
         /// </summary>
         string scriptUpdateText;
+        /// <summary>
+        /// The current step in the TIM process cycle.
+        /// </summary>
+        int processStep;
+        /// <summary>
+        /// All of the process steps that TIM will need to take,
+        /// </summary>
+        readonly Action[] processSteps;
+        /// <summary>
+        /// Stores the output of Echo so we can effectively ignore some calls
+        /// without overwriting it.
+        /// </summary>
+        public StringBuilder echoOutput = new StringBuilder();
+
+        IMyBroadcastListener BroadcastListener { get; }
 
         #endregion
 
@@ -236,12 +265,22 @@
 
             // init settings
             _ini.TryParse(Me.CustomData);
-            
+
+            // initialise the process steps we will need to do
+            processSteps = new Action[]
+            {
+                ProcessStepCheckBroadcastMessages
+            };
+
             Runtime.UpdateFrequency = FREQUENCY;
 
+            CelestialMap = new Map(this, celestialBodies);
             programmableBlock = new ProgrammableBlock(this);
             shipController = new ShipController(this);
-            textPanel = new DisplayTerminal(this, new Map(this, celestialBodies));
+            textPanel = new DisplayTerminal(this, CelestialMap);
+
+            this.BroadcastListener = this.IGC.RegisterBroadcastListener(GPSBroadcastTag);
+            this.BroadcastListener.SetMessageCallback();
 
             terminalCycle = SetTerminalCycle();
 
@@ -252,131 +291,106 @@
         }
 
         /// <summary>
-        /// Defines the CelestialType.
-        /// </summary>
-        public enum CelestialType
-        {
-            /// <summary>
-            /// Defines the Asteroid.
-            /// </summary>
-            Asteroid,
-            /// <summary>
-            /// Defines the Planet.
-            /// </summary>
-            Planet,
-            /// <summary>
-            /// Defines the Moon.
-            /// </summary>
-            Moon
-        }
-
-        /// <summary>
-        /// Defines the Oxygen.
-        /// </summary>
-        public enum Oxygen
-        {
-            /// <summary>
-            /// Defines the None.
-            /// </summary>
-            None,
-            /// <summary>
-            /// Defines the Low.
-            /// </summary>
-            Low,
-            /// <summary>
-            /// Defines the High.
-            /// </summary>
-            High
-        }
-
-        /// <summary>
-        /// The SetTerminalCycle.
-        /// </summary>
-        /// <returns>The <see cref="IEnumerator{bool}"/>.</returns>
-        private IEnumerator<bool> SetTerminalCycle()
-        {
-            while (true)
-            {
-                yield return shipController.Run();
-                yield return textPanel.Run();
-            }
-        }
-
-        /// <summary>
         /// The Main.
         /// </summary>
         /// <param name="arg">The arg<see cref="string"/>.</param>
         /// <param name="updateType">The updateType<see cref="UpdateType"/>.</param>
         public void Main(string arg, UpdateType updateType)
         {
-            currentCycleStartTime = DateTime.Now;
+            if (USE_REAL_TIME)
+            {
+                DateTime n = DateTime.Now;
+                if (n - currentCycleStartTime >= cycleUpdateWaitTime)
+                    currentCycleStartTime = n;
+                else
+                {
+                    Echo(echoOutput.ToString()); // ensure that output is not lost
+                    return;
+                }
+            }
+            else
+            {
+                currentCycleStartTime = DateTime.Now;
+            }
 
             echoOutput.Clear();
 
             // output terminal info
             EchoR(string.Format(scriptUpdateText, ++totalCallCount, currentCycleStartTime.ToString("h:mm:ss tt")));
 
+            if (processStep == processSteps.Length)
+            {
+                processStep = 0;
+            }
+            int processStepTmp = processStep;
+            bool didAtLeastOneProcess = false;
+
+            try
+            {
+                processSteps[processStep]();
+                didAtLeastOneProcess = true;
+            }
+            catch (PutOffExecutionException) { }
+            catch (Exception ex)
+            {
+                // if the process step threw an exception, make sure we print the info
+                // we need to debug it
+                string err = "An error occured,\n" +
+                    "please give the following information to the developer:\n" +
+                    string.Format("Current step on error: {0}\n{1}", processStep, ex.ToString().Replace("\r", ""));
+                EchoR(err);
+                throw ex;
+            }
+
             if (!terminalCycle.MoveNext())
                 terminalCycle.Dispose();
 
-            EchoR(string.Format("Instructions: {0}", Runtime.CurrentInstructionCount + "/" + Runtime.MaxInstructionCount));
-            EchoR(string.Format("Call chain: {0}", Runtime.CurrentCallChainDepth + "/" + Runtime.MaxCallChainDepth));
-            EchoR(string.Format("Execution time: {0}", Runtime.LastRunTimeMs.ToString("F2") + " ms"));
+            //EchoR(string.Format("Instructions: {0}", Runtime.CurrentInstructionCount + "/" + Runtime.MaxInstructionCount));
+            //EchoR(string.Format("Call chain: {0}", Runtime.CurrentCallChainDepth + "/" + Runtime.MaxCallChainDepth));
+            //EchoR(string.Format("Execution time: {0}", Runtime.LastRunTimeMs.ToString("F2") + " ms"));
 
             if (shipController.Main == null)
             {
                 EchoR("Status\n- Controller does not exist.");
             }
 
+            string stepText;
+            int theoryProcessStep = processStep == 0 ? processSteps.Count() : processStep;
             int exTime = ExecutionTime;
             double exLoad = Math.Round(100.0f * ExecutionLoad, 1);
-            string stepText = "all steps";
+            if (processStep == 0 && processStepTmp == 0 && didAtLeastOneProcess)
+                stepText = "all steps";
+            else if (processStep == processStepTmp)
+                stepText = string.Format("step {0} partially", processStep);
+            else if (theoryProcessStep - processStepTmp == 1)
+                stepText = string.Format("step {0}", processStepTmp);
+            else
+                stepText = string.Format("steps {0} to {1}", processStepTmp, theoryProcessStep - 1);
             EchoR(string.Format("Completed {0} in {1}ms\n{2}% load ({3} instructions)",
                 stepText, exTime, exLoad, Runtime.CurrentInstructionCount));
 
             programmableBlock.Draw();
         }
         
-        /// <summary>
-        /// Defines the <see cref="ProgrammableBlock" />.
-        /// </summary>
-        private class ProgrammableBlock
+        void ProcessStepCheckBroadcastMessages()
         {
-            /// <summary>
-            /// Defines the program.
-            /// </summary>
-            protected Program program;
-
-            /// <summary>
-            /// Defines the textSurface.
-            /// </summary>
-            private readonly IMyTextSurface textSurface;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ProgrammableBlock"/> class.
-            /// </summary>
-            /// <param name="program">The program<see cref="Program"/>.</param>
-            /// <param name="updateFrequency">The updateFrequency<see cref="UpdateFrequency"/>.</param>
-            public ProgrammableBlock(Program program)
+            if (this.BroadcastListener.HasPendingMessage)
             {
-                this.program = program;
-                short display = program._ini.Get(IniSectionKey, "DebugDisplay").ToInt16();
-
-                textSurface = program.Me.GetSurface(display);
-                textSurface.ContentType = ContentType.SCRIPT;
-            }
-
-            /// <summary>
-            /// The Draw.
-            /// </summary>
-            public void Draw()
-            {
-
-                if (program.Me.CubeGrid.GridSizeEnum == MyCubeSize.Small)
-                    return;
-
-                textSurface.ContentType = ContentType.TEXT_AND_IMAGE;
-                textSurface.WriteText(program.echoOutput);
+                EchoR("Received broadcast message");
+                MyIGCMessage message = this.BroadcastListener.AcceptMessage();
+                try
+                {
+                    var data = message.As<MyTuple<long, string, Vector3D, string>>();
+                    GPSInfo gpsmessage = new GPSInfo()
+                    {
+                        ID = data.Item1,
+                        Name = data.Item2,
+                        Position = data.Item3,
+                        Created = DateTime.Now
+                    };
+                    CelestialMap.AddGPSPosition(gpsmessage);
+                }
+                catch { }
             }
         }
         

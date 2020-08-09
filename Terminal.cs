@@ -53,7 +53,7 @@ namespace IngameScript
         public Terminal(Program program)
         {
             this.program = program;
-            this.EchoR = program.EchoR;
+            //this.EchoR = program.EchoR;
         }
 
         /// <summary>

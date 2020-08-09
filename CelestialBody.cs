@@ -24,7 +24,7 @@ namespace IngameScript
         /// <summary>
         /// Defines the <see cref="CelestialBody" />.
         /// </summary>
-        public class CelestialBody
+        class CelestialBody
         {
             /// <summary>
             /// Defines the Type.

@@ -6,7 +6,7 @@ R e a d m e
 ## Star System Map - A Space Engineers Mod
 
 
-This is a modification of the mod made by Skimt that you at the link below
+This is a modification of the mod by Skimt that you find at the link below
 https://steamcommunity.com/sharedfiles/filedetails/?id=2165264228
 
 You find a guide of how to set up the planet list in the original description of the mod, here I add the settings you can add to the Programmable Block and LCDs to change the look of the map.
@@ -41,7 +41,13 @@ You find a guide of how to set up the planet list in the original description of
 	DisplayInfoPanel=true  // show the info panel
 	DisplayGridName=true   // show the grid name near the red dot
 	DisplayOrbit=true      // show planets orbit
-	StretchFactor=1        // stretch the map on x axis if too wide
+	StretchFactor=1        // [deprecated] stretch the map on x axis if too wide
+	StretchFactorH=1       // stretch the map horizontally, fraction allowed
+	StretchFactorV=1       // stretch the map vertically, fraction allowed
+	FollowGrid=1           // put the current grid at the center of the map
+	CenterPosition=<GPS>   // Custom center position using GPS game format
+	MapRadius=1            // Radius of the map in Km when using CenterPosition or FollowGrid option
+	DisplayGPS=false       // Display GPS points (WIP)
 
 
 ### Source code 

@@ -25,7 +25,7 @@ namespace IngameScript
         /// <summary>
         /// Defines the <see cref="Map" />.
         /// </summary>
-        private class Map
+        class Map
         {
 
             private readonly float minX;
@@ -37,6 +37,21 @@ namespace IngameScript
             private readonly float maxZ;
 
             private readonly Program program;
+
+            public Vector3 StarPosition { get; } = new Vector3(0, 0, -2000000);
+
+            public int StarRadius { get; } = 100000;
+
+            public Boolean Inverted { get; } = false;
+
+            /// <summary>
+            /// Gets the CelestialBodies.
+            /// </summary>
+            public List<CelestialBody> CelestialBodies { get; }
+            /// <summary>
+            /// Only the planets ordered by distance to render on LCD
+            /// </summary>
+            public List<CelestialBody> Planets { get; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Map"/> class.
@@ -55,7 +70,8 @@ namespace IngameScript
                 }
 
                 CelestialBodies = celestialBodies;
-                CelestialInfo = new List<CelestialBody>(celestialBodies);
+                Planets = celestialBodies.FindAll(cb => cb.Type == CelestialType.Planet);
+                Planets.Sort(SortByDistance);
 
                 minX = StarPosition.X;
                 maxX = StarPosition.X;
@@ -73,26 +89,7 @@ namespace IngameScript
                     minZ = planet.Position.Z < minZ ? planet.Position.Z : minZ;
 
                 }
-
-                CelestialBodies.Sort(SortByDistance);
-                //CelestialBodies.Sort(SortByType);
             }
-
-            public Vector3 StarPosition { get; } = new Vector3(0, 0, -2000000);
-
-            public int StarRadius { get; } = 100000;
-
-            public Boolean Inverted { get; } = false;
-
-            /// <summary>
-            /// Gets the CelestialBodies.
-            /// </summary>
-            public List<CelestialBody> CelestialBodies { get; }
-
-            /// <summary>
-            /// Gets the CelestialInfo.
-            /// </summary>
-            public List<CelestialBody> CelestialInfo { get; }
 
             /// <summary>
             /// The GetMapPosition.
@@ -112,6 +109,27 @@ namespace IngameScript
                 return mapCoordinates;
             }
 
+            public Vector2 GetMapPosition(Vector3 position, Vector3 centerPosition, int radius = 1)
+            {
+                if (centerPosition == Vector3.Zero)
+                {
+                    return GetMapPosition(position);
+                }
+
+                var radiusInMeters = radius * 1000;  // in meters
+                var minX = centerPosition.X - radiusInMeters;
+                var minZ = centerPosition.Z - radiusInMeters;
+
+                Vector2 mapCoordinates = Vector2.Zero;
+                mapCoordinates.X = position.X - minX;
+                mapCoordinates.Y = position.Z - minZ;
+                var range = radiusInMeters * 2;
+
+                mapCoordinates = new Vector2(mapCoordinates.X / range, mapCoordinates.Y / range);
+                if (Inverted) mapCoordinates = Vector2.One - mapCoordinates;
+                return mapCoordinates;
+            }
+            
             /// <summary>
             /// The SortByDistance.
             /// </summary>
@@ -142,6 +160,19 @@ namespace IngameScript
                 else if (b.Type == CelestialType.Moon && a.Type == CelestialType.Planet)
                     return 1;
                 return 0;
+            }
+
+            public void AddGPSPosition(GPSInfo gpsinfo)
+            {
+                var celestialBody = CelestialBodies.Find(obj => obj.Name == gpsinfo.Name);
+                if (celestialBody == null)
+                {
+                    celestialBody = new CelestialBody();
+                    CelestialBodies.Add(celestialBody);
+                }
+                celestialBody.Name = gpsinfo.Name;
+                celestialBody.Position = gpsinfo.Position;
+                celestialBody.Type = CelestialType.GPS;
             }
         }
     }

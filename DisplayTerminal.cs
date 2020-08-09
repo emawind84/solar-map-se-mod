@@ -25,7 +25,7 @@ namespace IngameScript
         /// <summary>
         /// Defines the <see cref="DisplayTerminal" />.
         /// </summary>
-        private class DisplayTerminal : Terminal<IMyTerminalBlock>
+        class DisplayTerminal : Terminal<IMyTerminalBlock>
         {
             /// <summary>
             /// Defines the infoSize.
@@ -51,8 +51,6 @@ namespace IngameScript
             /// Defines the map.
             /// </summary>
             private readonly Map map;
-
-            bool odd = false;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="DisplayTerminal"/> class.
@@ -80,9 +78,19 @@ namespace IngameScript
                 bool displayInfoPanel = _ini.Get(IniSectionKey, "DisplayInfoPanel").ToBoolean(true);
                 bool displaySun = _ini.Get(IniSectionKey, "DisplaySun").ToBoolean(true);
                 bool displayOrbit = _ini.Get(IniSectionKey, "DisplayOrbit").ToBoolean(true);
+                bool displayGPS = _ini.Get(IniSectionKey, "DisplayGPS").ToBoolean(false);
                 float stretchFactor = _ini.Get(IniSectionKey, "StretchFactor").ToSingle(1);
                 float stretchFactorV = _ini.Get(IniSectionKey, "StretchFactorV").ToSingle(1);
                 float stretchFactorH = _ini.Get(IniSectionKey, "StretchFactorH").ToSingle(stretchFactor);
+                int mapRadius = _ini.Get(IniSectionKey, "MapRadius").ToInt16();
+                bool followGrid = _ini.Get(IniSectionKey, "FollowGrid").ToBoolean();
+                Vector3 mapCenterPosition = Vector3.Zero;
+                if (followGrid) mapCenterPosition = program.Me.CubeGrid.GetPosition();
+                MyWaypointInfo centerPosition;
+                if (MyWaypointInfo.TryParse(_ini.Get(IniSectionKey, "CenterPosition").ToString(), out centerPosition))
+                {
+                    mapCenterPosition = centerPosition.Coords;
+                }
 
                 gridWorldPosition = program.Me.GetPosition();
                 IMyTextSurface lcd;
@@ -99,13 +107,11 @@ namespace IngameScript
                 lcd.Script = "";
 
                 RectangleF _viewport = new RectangleF((lcd.TextureSize - lcd.SurfaceSize) / 2f, lcd.SurfaceSize);
-                EchoR("" + lcd.ScriptBackgroundColor);
+
                 using (MySpriteDrawFrame frame = lcd.DrawFrame())
                 {
                     if (GetRefreshCount(block) % 2 == 0) frame.Add(new MySprite());
                     
-                    //frame.Add(new MySprite(SpriteType.TEXTURE, "SquareSimple", _viewport.Position + lcd.SurfaceSize / 2, lcd.SurfaceSize, new Color(rnd.Next(256), rnd.Next(256), rnd.Next(256))));
-
                     Vector2 positionMult = new Vector2(0.8f / stretchFactorH, 0.8f / stretchFactorV);
                     Vector2 infoPanelOffset = Vector2.Zero;
                     if (displayInfoPanel)
@@ -115,11 +121,11 @@ namespace IngameScript
                     }
                     Vector2 lcdSize = lcd.SurfaceSize - infoPanelOffset;
                     Vector2 positionOffset = (lcdSize - lcdSize * positionMult) / 2f + infoPanelOffset + _viewport.Position;
-                    Vector2 starPosition = map.GetMapPosition(map.StarPosition) * lcdSize * positionMult + positionOffset;
+                    Vector2 starPosition = map.GetMapPosition(map.StarPosition, mapCenterPosition, mapRadius) * lcdSize * positionMult + positionOffset;
 
-                    foreach (CelestialBody celestialBody in map.CelestialBodies.Where(cb => cb.Type == CelestialType.Planet))
+                    foreach (CelestialBody celestialBody in map.Planets)
                     {
-                        celestialBody.PlanetPosition = map.GetMapPosition(celestialBody.Position) * lcdSize * positionMult + positionOffset;
+                        celestialBody.PlanetPosition = map.GetMapPosition(celestialBody.Position, mapCenterPosition, mapRadius) * lcdSize * positionMult + positionOffset;
                         celestialBody.OrbitSize = new Vector2(Vector2.Distance(celestialBody.PlanetPosition, starPosition)) * 2;
 
                         // Celestial orbits.
@@ -132,7 +138,7 @@ namespace IngameScript
                     }
 
                     // Celestial bodies.
-                    foreach (CelestialBody celestialBody in map.CelestialBodies.Where(cb => cb.Type == CelestialType.Planet))
+                    foreach (CelestialBody celestialBody in map.Planets)
                     {
                         celestialBody.PlanetSize = new Vector2(lcd.SurfaceSize.Y * celestialBody.Radius * 0.000001f);
                         celestialBody.LblTitlePos = new Vector2(celestialBody.PlanetPosition.X, celestialBody.PlanetPosition.Y - 40 - celestialBody.PlanetSize.Y * 0.5f);
@@ -148,10 +154,9 @@ namespace IngameScript
                     }
 
                     // Grid dot or arrow.
-                    if (program.shipController != null)
                     {
-                        Vector2 position = lcdSize * map.GetMapPosition(gridWorldPosition) * positionMult + positionOffset;
-                        if (program.shipController.Main != null && !program.Me.CubeGrid.IsStatic)
+                        var position = lcdSize * map.GetMapPosition(gridWorldPosition, mapCenterPosition, mapRadius) * positionMult + positionOffset;
+                        if (program.shipController?.Main != null && !program.Me.CubeGrid.IsStatic)
                         {
                             // float rotation = -(float)(Math.Acos(program.shipController.Main.WorldMatrix.Forward.Z) + (Math.PI / 2f));
                             float azimuth, elevation;
@@ -165,6 +170,16 @@ namespace IngameScript
                         if (displayGridName)
                         {
                             frame.Add(new MySprite(SpriteType.TEXT, program.Me.CubeGrid.DisplayName, position - 10, null, Color.Red, null, TextAlignment.RIGHT, 0.5f));
+                        }
+                    }
+
+                    if (displayGPS)
+                    {
+                        foreach (var gps in map.CelestialBodies.FindAll(body => body.Type == CelestialType.GPS))
+                        {
+                            var _gpsPos = map.GetMapPosition(gps.Position, mapCenterPosition, mapRadius) * lcdSize * positionMult + positionOffset;
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", _gpsPos, new Vector2(lcdSize.Y * 0.01f), Color.Yellow));
+                            frame.Add(new MySprite(SpriteType.TEXT, gps.Name, _gpsPos - 10, null, Color.Yellow, null, TextAlignment.RIGHT, 0.5f));
                         }
                     }
 
@@ -187,16 +202,17 @@ namespace IngameScript
 
                         // Information panel background.
                         int xOffsetIncrement = 190;
-                        for (int i = 0; i < Math.Min(Math.Ceiling(map.CelestialInfo.Count * 1f / infoPanelPerColumn), maxColumns); i++)
+                        var planetsAndMoons = map.CelestialBodies.FindAll(obj => obj.Type == CelestialType.Planet || obj.Type == CelestialType.Moon);
+                        for (int i = 0; i < Math.Min(Math.Ceiling(planetsAndMoons.Count * 1f / infoPanelPerColumn), maxColumns); i++)
                         {
                             frame.Add(new MySprite(SpriteType.TEXTURE, "SquareSimple", new Vector2(95 + i * xOffsetIncrement, lcd.SurfaceSize.Y / 2) + _viewport.Position, new Vector2(183, lcd.SurfaceSize.Y - 5), new Color(0, 0, 0, 50)));
                         }
 
                         // Information panel content.
-                        for (int i = 0; i < map.CelestialInfo.Count; i++)
+                        for (int i = 0; i < planetsAndMoons.Count; i++)
                         {
                             if (i >= infoPanelPerColumn * maxColumns) break;
-                            CelestialBody cb = map.CelestialInfo[i];
+                            CelestialBody cb = planetsAndMoons[i];
 
                             int yOffset = 83 * (i % infoPanelPerColumn);
                             int xOffset = i / infoPanelPerColumn * xOffsetIncrement;
@@ -222,11 +238,6 @@ namespace IngameScript
                         // Drawing the Sun
                         frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, new Vector2(lcd.SurfaceSize.Y * map.StarRadius * 0.000001f), Color.Yellow));
                     }
-
-                    // SHOW OMG
-                    //float azimuth, elevation;
-                    //Vector3.GetAzimuthAndElevation(program.shipController.Main.WorldMatrix.Forward, out azimuth, out elevation);
-                    //frame.Add(new MySprite(SpriteType.TEXT, (azimuth).ToString(), new Vector2(250, 250), null, null, null, rotation: 0.7f));
 
                 }
             }

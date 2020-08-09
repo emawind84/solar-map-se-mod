@@ -66,6 +66,7 @@
     <AdditionalFiles Include="Instructions.readme" />
     <AdditionalFiles Include="thumb.png" />
     <AdditionalFiles Include="MDK\whitelist.cache" />
+    <Compile Include="ProgramExtension.cs" />
     <Compile Include="ShipController.cs" />
     <Compile Include="Terminal.cs" />
     <Compile Include="DisplayTerminal.cs" />
