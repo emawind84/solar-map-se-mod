@@ -118,9 +118,9 @@
 
         #endregion
 
-        const string IniSectionKey = "SolarMap";
+        const string ScriptPrefixTag = "SolarMap";
 
-        const string GPSBroadcastTag = "SHUTTLE_STATE";
+        string GPSBroadcastTag = "GPS_POS";
 
         /// <summary>
         /// whether to use real time (second between calls) or pure UpdateFrequency
@@ -130,7 +130,7 @@
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
-        private const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
+        const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
         /// <summary>
         /// How often the script should update in milliseconds
         /// </summary>
@@ -143,21 +143,21 @@
         /// <summary>
         /// Defines the terminalCycle.
         /// </summary>
-        private readonly IEnumerator<bool> terminalCycle;
+        readonly IEnumerator<bool> terminalCycle;
         /// <summary>
         /// Defines the programmableBlock.
         /// </summary>
-        private readonly ProgrammableBlock programmableBlock;
+        readonly ProgrammableBlock programmableBlock;
         /// <summary>
         /// Defines the shipController.
         /// </summary>
-        private readonly ShipController shipController;
+        readonly ShipController shipController;
         /// <summary>
         /// Defines the textPanel.
         /// </summary>
-        private readonly DisplayTerminal textPanel;
+        readonly DisplayTerminal textPanel;
 
-        private MyIni _ini = new MyIni();
+        MyIni _ini = new MyIni();
 
         /// <summary>
         /// A wrapper for the <see cref="Echo"/> function that adds the log to the stored log.
@@ -264,7 +264,7 @@
             };
 
             // init settings
-            _ini.TryParse(Me.CustomData);
+            RetrieveCustomSetting();
 
             // initialise the process steps we will need to do
             processSteps = new Action[]

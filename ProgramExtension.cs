@@ -28,6 +28,18 @@ namespace IngameScript
             return blocks.Count() > 0 ? blocks[0] : null;
         }
 
+        void RetrieveCustomSetting()
+        {
+            // init settings
+            _ini.TryParse(Me.CustomData);
+
+            string _gpsBroadcastTag = _ini.Get(ScriptPrefixTag, "GPSBroadcastTag").ToString();
+            if (_gpsBroadcastTag != "")
+            {
+                GPSBroadcastTag = _gpsBroadcastTag;
+            }
+        }
+
         /// <summary>
         /// Defines the CelestialType.
         /// </summary>
@@ -112,7 +124,7 @@ namespace IngameScript
             public ProgrammableBlock(Program program)
             {
                 this.program = program;
-                short display = program._ini.Get(IniSectionKey, "DebugDisplay").ToInt16();
+                short display = program._ini.Get(ScriptPrefixTag, "DebugDisplay").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;
