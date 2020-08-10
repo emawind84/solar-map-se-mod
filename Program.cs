@@ -120,7 +120,9 @@
 
         string ScriptPrefixTag = "SolarMap";
 
-        string GPSBroadcastTag = "GPS_POS";
+        string GpsBroadcastTag = "GPS_POS";
+
+        TimeSpan DetectedEntityDisplayPeriod = new TimeSpan(0, 0, 30);
 
         /// <summary>
         /// whether to use real time (second between calls) or pure UpdateFrequency
@@ -269,7 +271,9 @@
             // initialise the process steps we will need to do
             processSteps = new Action[]
             {
-                ProcessStepCheckBroadcastMessages
+                ProcessStepCheckBroadcastMessages,
+                ProcessStepDetectGridsWithSensor,
+                ProcessStepCleanDetectedEntities
             };
 
             Runtime.UpdateFrequency = FREQUENCY;
@@ -279,7 +283,7 @@
             shipController = new ShipController(this);
             textPanel = new DisplayTerminal(this, CelestialMap);
 
-            this.BroadcastListener = this.IGC.RegisterBroadcastListener(GPSBroadcastTag);
+            this.BroadcastListener = this.IGC.RegisterBroadcastListener(GpsBroadcastTag);
             this.BroadcastListener.SetMessageCallback();
 
             terminalCycle = SetTerminalCycle();
@@ -297,6 +301,11 @@
         /// <param name="updateType">The updateType<see cref="UpdateType"/>.</param>
         public void Main(string arg, UpdateType updateType)
         {
+            if (updateType == UpdateType.IGC) {
+                Echo(echoOutput.ToString()); // ensure that output is not lost
+                return;
+            }
+
             if (USE_REAL_TIME)
             {
                 DateTime n = DateTime.Now;
@@ -388,12 +397,40 @@
                         Position = data.Item3,
                         Created = DateTime.Now
                     };
-                    CelestialMap.AddGPSPosition(gpsmessage);
+                    CelestialMap.AddGPSPosition(gpsmessage.Name, gpsmessage.Position);
                 }
                 catch { }
             }
+            processStep++;
+        }
+
+        void ProcessStepDetectGridsWithSensor()
+        {
+            var sensors = new List<IMySensorBlock>();
+            GridTerminalSystem.GetBlocksOfType(sensors, blk => blk.IsSameConstructAs(Me));
+            foreach (var sensor in sensors)
+            {
+                var detectedGrids = new List<MyDetectedEntityInfo>();
+                sensor.DetectedEntities(detectedGrids);
+                foreach (var grid in detectedGrids) {
+                    CelestialMap.AddGPSPosition(grid.Name, grid.Position);
+                }
+            }
+            processStep++;
         }
         
+        void ProcessStepCleanDetectedEntities()
+        {
+            foreach (DetectedEntity entity in CelestialMap.CelestialBodies.FindAll(entity => entity is DetectedEntity))
+            {
+                if (DateTime.Now  - entity.Detected > DetectedEntityDisplayPeriod)
+                {
+                    EchoR($"removing {entity.Name}");
+                    CelestialMap.CelestialBodies.Remove(entity);
+                }
+            }
+            processStep++;
+        }
     }
 
 }

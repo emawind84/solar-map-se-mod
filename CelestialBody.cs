@@ -91,5 +91,15 @@ namespace IngameScript
             /// </summary>
             public Vector2 LblDistancePos;
         }
+
+        class DetectedEntity : CelestialBody
+        {
+            public DateTime Detected;
+            
+            public DetectedEntity() : base()
+            {
+                Detected = DateTime.Now;
+            }
+        }
     }
 }

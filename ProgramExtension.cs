@@ -33,10 +33,10 @@ namespace IngameScript
             // init settings
             _ini.TryParse(Me.CustomData);
 
-            string _gpsBroadcastTag = _ini.Get(ScriptPrefixTag, "GPSBroadcastTag").ToString();
+            string _gpsBroadcastTag = _ini.Get(ScriptPrefixTag, "GpsBroadcastTag").ToString();
             if (_gpsBroadcastTag != "")
             {
-                GPSBroadcastTag = _gpsBroadcastTag;
+                GpsBroadcastTag = _gpsBroadcastTag;
             }
             
         }

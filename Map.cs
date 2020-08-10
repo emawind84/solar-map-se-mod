@@ -109,7 +109,7 @@ namespace IngameScript
                 return mapCoordinates;
             }
 
-            public Vector2 GetMapPosition(Vector3 position, Vector3 centerPosition, int radius = 1)
+            public Vector2 GetMapPosition(Vector3 position, Vector3 centerPosition, float radius = 1)
             {
                 if (centerPosition == Vector3.Zero)
                 {
@@ -162,16 +162,16 @@ namespace IngameScript
                 return 0;
             }
 
-            public void AddGPSPosition(GPSInfo gpsinfo)
+            public void AddGPSPosition(string name, Vector3 position)
             {
-                var celestialBody = CelestialBodies.Find(obj => obj.Name == gpsinfo.Name);
+                var celestialBody = CelestialBodies.Find(obj => obj.Name == name);
                 if (celestialBody == null)
                 {
-                    celestialBody = new CelestialBody();
+                    celestialBody = new DetectedEntity();
                     CelestialBodies.Add(celestialBody);
                 }
-                celestialBody.Name = gpsinfo.Name;
-                celestialBody.Position = gpsinfo.Position;
+                celestialBody.Name = name;
+                celestialBody.Position = position;
                 celestialBody.Type = CelestialType.GPS;
             }
         }

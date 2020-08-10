@@ -82,10 +82,9 @@ namespace IngameScript
                 float stretchFactor = _ini.Get(Program.ScriptPrefixTag, "StretchFactor").ToSingle(1);
                 float stretchFactorV = _ini.Get(Program.ScriptPrefixTag, "StretchFactorV").ToSingle(1);
                 float stretchFactorH = _ini.Get(Program.ScriptPrefixTag, "StretchFactorH").ToSingle(stretchFactor);
-                int mapRadius = _ini.Get(Program.ScriptPrefixTag, "MapRadius").ToInt16();
+                float mapRadius = _ini.Get(Program.ScriptPrefixTag, "MapRadius").ToSingle();
                 bool followGrid = _ini.Get(Program.ScriptPrefixTag, "FollowGrid").ToBoolean();
                 Vector3 mapCenterPosition = Vector3.Zero;
-                if (followGrid) mapCenterPosition = Program.Me.CubeGrid.GetPosition();
                 MyWaypointInfo centerPosition;
                 if (MyWaypointInfo.TryParse(_ini.Get(Program.ScriptPrefixTag, "CenterPosition").ToString(), out centerPosition))
                 {
@@ -93,6 +92,8 @@ namespace IngameScript
                 }
 
                 gridWorldPosition = Program.Me.GetPosition();
+                if (followGrid) mapCenterPosition = gridWorldPosition;
+
                 IMyTextSurface lcd;
                 if (block is IMyTextSurfaceProvider)
                 {
@@ -169,7 +170,7 @@ namespace IngameScript
                         }
                         if (displayGridName)
                         {
-                            frame.Add(new MySprite(SpriteType.TEXT, Program.Me.CubeGrid.DisplayName, position - 10, null, Color.Red, null, TextAlignment.RIGHT, 0.5f));
+                            frame.Add(new MySprite(SpriteType.TEXT, Program.Me.CubeGrid.DisplayName, position - 10, null, Color.Red, null, TextAlignment.RIGHT, 0.55f));
                         }
                     }
 
@@ -178,8 +179,8 @@ namespace IngameScript
                         foreach (var gps in map.CelestialBodies.FindAll(body => body.Type == CelestialType.GPS))
                         {
                             var _gpsPos = map.GetMapPosition(gps.Position, mapCenterPosition, mapRadius) * lcdSize * positionMult + positionOffset;
-                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", _gpsPos, new Vector2(lcdSize.Y * 0.01f), Color.Yellow));
-                            frame.Add(new MySprite(SpriteType.TEXT, gps.Name, _gpsPos - 10, null, Color.Yellow, null, TextAlignment.RIGHT, 0.5f));
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", _gpsPos, new Vector2(lcdSize.Y * 0.01f), lcd.ScriptForegroundColor));
+                            frame.Add(new MySprite(SpriteType.TEXT, gps.Name, _gpsPos - 10, null, lcd.ScriptForegroundColor, null, TextAlignment.RIGHT, 0.55f));
                         }
                     }
 
