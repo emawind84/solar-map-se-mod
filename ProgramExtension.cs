@@ -38,6 +38,7 @@ namespace IngameScript
             {
                 GPSBroadcastTag = _gpsBroadcastTag;
             }
+            
         }
 
         /// <summary>
@@ -124,7 +125,7 @@ namespace IngameScript
             public ProgrammableBlock(Program program)
             {
                 this.program = program;
-                short display = program._ini.Get(ScriptPrefixTag, "DebugDisplay").ToInt16();
+                short display = program._ini.Get(program.ScriptPrefixTag, "DebugDisplay").ToInt16();
 
                 textSurface = program.Me.GetSurface(display);
                 textSurface.ContentType = ContentType.SCRIPT;

@@ -73,21 +73,21 @@ namespace IngameScript
                 // return false if the source wasn't compatible with the parser.
                 MyIni _ini = new MyIni();
                 _ini.TryParse(block.CustomData);
-                short display = _ini.Get(ScriptPrefixTag, "Display").ToInt16();
-                bool displayGridName = _ini.Get(ScriptPrefixTag, "DisplayGridName").ToBoolean(true);
-                bool displayInfoPanel = _ini.Get(ScriptPrefixTag, "DisplayInfoPanel").ToBoolean(true);
-                bool displaySun = _ini.Get(ScriptPrefixTag, "DisplaySun").ToBoolean(true);
-                bool displayOrbit = _ini.Get(ScriptPrefixTag, "DisplayOrbit").ToBoolean(true);
-                bool displayGPS = _ini.Get(ScriptPrefixTag, "DisplayGPS").ToBoolean(false);
-                float stretchFactor = _ini.Get(ScriptPrefixTag, "StretchFactor").ToSingle(1);
-                float stretchFactorV = _ini.Get(ScriptPrefixTag, "StretchFactorV").ToSingle(1);
-                float stretchFactorH = _ini.Get(ScriptPrefixTag, "StretchFactorH").ToSingle(stretchFactor);
-                int mapRadius = _ini.Get(ScriptPrefixTag, "MapRadius").ToInt16();
-                bool followGrid = _ini.Get(ScriptPrefixTag, "FollowGrid").ToBoolean();
+                short display = _ini.Get(Program.ScriptPrefixTag, "Display").ToInt16();
+                bool displayGridName = _ini.Get(Program.ScriptPrefixTag, "DisplayGridName").ToBoolean(true);
+                bool displayInfoPanel = _ini.Get(Program.ScriptPrefixTag, "DisplayInfoPanel").ToBoolean(true);
+                bool displaySun = _ini.Get(Program.ScriptPrefixTag, "DisplaySun").ToBoolean(true);
+                bool displayOrbit = _ini.Get(Program.ScriptPrefixTag, "DisplayOrbit").ToBoolean(true);
+                bool displayGPS = _ini.Get(Program.ScriptPrefixTag, "DisplayGPS").ToBoolean(false);
+                float stretchFactor = _ini.Get(Program.ScriptPrefixTag, "StretchFactor").ToSingle(1);
+                float stretchFactorV = _ini.Get(Program.ScriptPrefixTag, "StretchFactorV").ToSingle(1);
+                float stretchFactorH = _ini.Get(Program.ScriptPrefixTag, "StretchFactorH").ToSingle(stretchFactor);
+                int mapRadius = _ini.Get(Program.ScriptPrefixTag, "MapRadius").ToInt16();
+                bool followGrid = _ini.Get(Program.ScriptPrefixTag, "FollowGrid").ToBoolean();
                 Vector3 mapCenterPosition = Vector3.Zero;
                 if (followGrid) mapCenterPosition = Program.Me.CubeGrid.GetPosition();
                 MyWaypointInfo centerPosition;
-                if (MyWaypointInfo.TryParse(_ini.Get(ScriptPrefixTag, "CenterPosition").ToString(), out centerPosition))
+                if (MyWaypointInfo.TryParse(_ini.Get(Program.ScriptPrefixTag, "CenterPosition").ToString(), out centerPosition))
                 {
                     mapCenterPosition = centerPosition.Coords;
                 }
@@ -251,7 +251,7 @@ namespace IngameScript
             {
                 // Collect this.
                 bool isSolarmap = terminal.IsSameConstructAs(Program.Me)
-                    && MyIni.HasSection(terminal.CustomData, ScriptPrefixTag)
+                    && MyIni.HasSection(terminal.CustomData, Program.ScriptPrefixTag)
                     && (terminal is IMyTextPanel || terminal is IMyTextSurfaceProvider)
                     && terminal.IsWorking
                     && terminal != Program.Me;

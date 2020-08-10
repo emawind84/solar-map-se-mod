@@ -118,7 +118,7 @@
 
         #endregion
 
-        const string ScriptPrefixTag = "SolarMap";
+        string ScriptPrefixTag = "SolarMap";
 
         string GPSBroadcastTag = "GPS_POS";
 
@@ -126,7 +126,7 @@
         /// whether to use real time (second between calls) or pure UpdateFrequency
         /// for update frequency
         /// </summary>
-        readonly bool USE_REAL_TIME = false;
+        const bool USE_REAL_TIME = false;
         /// <summary>
         /// Defines the FREQUENCY.
         /// </summary>
@@ -163,7 +163,7 @@
         /// A wrapper for the <see cref="Echo"/> function that adds the log to the stored log.
         /// This allows the log to be remembered and re-outputted without extra work.
         /// </summary>
-        public Action<string> EchoR;
+        Action<string> EchoR;
         
         Map CelestialMap { get; set; }
 
