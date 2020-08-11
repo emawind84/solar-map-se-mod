@@ -49,6 +49,10 @@ You find a guide of how to set up the planet list in the original description of
 	MapRadius=1            // Radius of the map in Km when using CenterPosition or FollowGrid option
 	DisplayGPS=false       // Display GPS points (WIP)
 
+**Sensors** and **cameras** can be used to detect nearby grids, by adding the tag `[SolarMap]` to the **CustomData** of these blocks.
+The detected entity will be added as GPS point to the list of entities, in order to show these GPS points you need to add
+`DisplaGPS=true` to the block where you want to see these points.
+
 
 ### Source code 
 https://github.com/emawind84/solar-map-se-mod

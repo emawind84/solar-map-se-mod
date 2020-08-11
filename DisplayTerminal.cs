@@ -112,7 +112,7 @@ namespace IngameScript
                 using (MySpriteDrawFrame frame = lcd.DrawFrame())
                 {
                     if (GetRefreshCount(block) % 2 == 0) frame.Add(new MySprite());
-                    
+
                     Vector2 positionMult = new Vector2(0.8f / stretchFactorH, 0.8f / stretchFactorV);
                     Vector2 infoPanelOffset = Vector2.Zero;
                     if (displayInfoPanel)
@@ -123,6 +123,17 @@ namespace IngameScript
                     Vector2 lcdSize = lcd.SurfaceSize - infoPanelOffset;
                     Vector2 positionOffset = (lcdSize - lcdSize * positionMult) / 2f + infoPanelOffset + _viewport.Position;
                     Vector2 starPosition = map.GetMapPosition(map.StarPosition, mapCenterPosition, mapRadius) * lcdSize * positionMult + positionOffset;
+
+                    {  // display radar style
+                        //for (var i = 5; i > 0; i--)
+                        //{
+                        //    var position = lcdSize * map.GetMapPosition(mapCenterPosition, mapCenterPosition, mapRadius) * positionMult + positionOffset;
+                        //    var radarSize = new Vector2(lcd.SurfaceSize.Y * 0.18f * i);
+                        //    frame.Add(new MySprite(SpriteType.TEXTURE, "CircleHollow", position, radarSize + 2, new Color(lcd.ScriptForegroundColor, 0.1f)));
+                        //    frame.Add(new MySprite(SpriteType.TEXTURE, "CircleHollow", position, radarSize, lcd.ScriptBackgroundColor));
+                        //}
+                        //frame.Add(new MySprite(SpriteType.TEXTURE, "Grid", starPosition, new Vector2(20), lcd.ScriptForegroundColor));
+                    }
 
                     foreach (CelestialBody celestialBody in map.Planets)
                     {

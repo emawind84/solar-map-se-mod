@@ -122,6 +122,8 @@
 
         string GpsBroadcastTag = "GPS_POS";
 
+        int CameraScanRange = 1000;
+
         TimeSpan DetectedEntityDisplayPeriod = new TimeSpan(0, 0, 30);
 
         /// <summary>
@@ -272,7 +274,8 @@
             processSteps = new Action[]
             {
                 ProcessStepCheckBroadcastMessages,
-                ProcessStepDetectGridsWithSensor,
+                ProcessStepDetectGridsUsingSensor,
+                ProcessStepDetectGridsUsingCamera,
                 ProcessStepCleanDetectedEntities
             };
 
@@ -337,6 +340,7 @@
             try
             {
                 processSteps[processStep]();
+                processStep++;
                 didAtLeastOneProcess = true;
             }
             catch (PutOffExecutionException) { }
@@ -358,10 +362,10 @@
             //EchoR(string.Format("Call chain: {0}", Runtime.CurrentCallChainDepth + "/" + Runtime.MaxCallChainDepth));
             //EchoR(string.Format("Execution time: {0}", Runtime.LastRunTimeMs.ToString("F2") + " ms"));
 
-            if (shipController.Main == null)
-            {
-                EchoR("Status\n- Controller does not exist.");
-            }
+            //if (shipController.Main == null)
+            //{
+            //    EchoR("Status\n- Controller does not exist.");
+            //}
 
             string stepText;
             int theoryProcessStep = processStep == 0 ? processSteps.Count() : processStep;
@@ -401,13 +405,12 @@
                 }
                 catch { }
             }
-            processStep++;
         }
 
-        void ProcessStepDetectGridsWithSensor()
+        void ProcessStepDetectGridsUsingSensor()
         {
             var sensors = new List<IMySensorBlock>();
-            GridTerminalSystem.GetBlocksOfType(sensors, blk => blk.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(sensors, blk => blk.IsSameConstructAs(Me) && MyIni.HasSection(blk.CustomData, ScriptPrefixTag));
             foreach (var sensor in sensors)
             {
                 var detectedGrids = new List<MyDetectedEntityInfo>();
@@ -416,7 +419,25 @@
                     CelestialMap.AddGPSPosition(grid.Name, grid.Position);
                 }
             }
-            processStep++;
+        }
+
+        void ProcessStepDetectGridsUsingCamera()
+        {
+            var cameras = new List<IMyCameraBlock>();
+            GridTerminalSystem.GetBlocksOfType(cameras, blk => blk.IsSameConstructAs(Me) && MyIni.HasSection(blk.CustomData, ScriptPrefixTag));
+            foreach (var camera in cameras)
+            {
+                camera.EnableRaycast = true;
+                //EchoR($"raycast scan range: {camera.AvailableScanRange}");
+                if (camera.CanScan(CameraScanRange))
+                {
+                    var detectedGrid = camera.Raycast(CameraScanRange, 0, 0);
+                    if (!detectedGrid.IsEmpty()) {
+                        //EchoR($"detected: {detectedGrid.Name}");
+                        CelestialMap.AddGPSPosition(detectedGrid.Name, detectedGrid.Position);
+                    }
+                }
+            }
         }
         
         void ProcessStepCleanDetectedEntities()
@@ -425,11 +446,10 @@
             {
                 if (DateTime.Now  - entity.Detected > DetectedEntityDisplayPeriod)
                 {
-                    EchoR($"removing {entity.Name}");
+                    //EchoR($"removing {entity.Name}");
                     CelestialMap.CelestialBodies.Remove(entity);
                 }
             }
-            processStep++;
         }
     }
 
