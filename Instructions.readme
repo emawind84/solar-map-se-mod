@@ -25,10 +25,12 @@ You find a guide of how to set up the planet list in the original description of
 
 **Programmable Blocks**
 
-	[SolarMap]
-	DebugDisplay=0						// Surface where to display debug data
-	StarRadius=100000					// Star radius (try not to exagerate here, is more like a red dwarf)
-	StarPosition=GPS:Sun:0:0:-3000000:	// The Star position in game (Use game's GPS format)
+	[SolarMap]	
+|                                    |                                                                   |
+|------------------------------------|-------------------------------------------------------------------|
+| DebugDisplay=0                     | Surface where to display debug data                               |
+| StarRadius=100000                  | Star radius (try not to exagerate here, is more like a red dwarf) |
+| StarPosition=GPS:Sun:0:0:-3000000: | The Star position in game (Use game's GPS format)                 |
 
 	*You need to recompile the script to update the settings
 
@@ -36,21 +38,25 @@ You find a guide of how to set up the planet list in the original description of
 **Display block or terminal with multiple screens:**
 
 	[SolarMap]
-	Display=0				// surface where to display the map
-	DebugDisplay=0			// Surface where to display debug data
-	DisplaySun=true			// show the sun
-	DisplayInfoPanel=true	// show the info panel
-	DisplayGridName=true	// show the grid name near the red dot
-	DisplayOrbit=true		// show planets orbit
-	StretchFactorH=1		// stretch the map horizontally, fraction allowed
-	StretchFactorV=1		// stretch the map vertically, fraction allowed
-	FollowGrid=1			// place the current grid at the center of the map
-	CenterPosition=<GPS>	// Custom center position using GPS game format
-	MapRadius=1				// Radius of the map in Km when using CenterPosition or FollowGrid option
-	DisplayGPS=false		// Display GPS points (WIP)
-	DisplayGrid=false		// Display a grid in the background
-	PlanetScaleFactor=1		// Resize the planet by this number 
-	StretchFactor=1			// [deprecated] stretch the map on x axis if too wide
+
+|                       |                                                                        |
+|-----------------------|------------------------------------------------------------------------|
+| Display=0             | surface where to display the map                                       |
+| DebugDisplay=0        | Surface where to display debug data                                    |
+| DisplaySun=true       | show the sun                                                           |
+| DisplayInfoPanel=true | show the info panel                                                    |
+| DisplayGridName=true  | show the grid name near the red dot                                    |
+| DisplayOrbit=true     | show planets orbit                                                     |
+| StretchFactorH=1      | stretch the map horizontally, fraction allowed                         |
+| StretchFactorV=1      | stretch the map vertically, fraction allowed                           |
+| FollowGrid=1          | place the current grid at the center of the map                        |
+| CenterPosition=<GPS>  | Custom center position using GPS game format                           |
+| MapRadius=1           | Radius of the map in Km when using CenterPosition or FollowGrid option |
+| DisplayGPS=false      | Display GPS points (WIP)                                               |
+| DisplayGrid=false     | Display a grid in the background                                       |
+| PlanetScaleFactor=1   | Resize the planet by this number                                       |
+| StretchFactor=1       | [deprecated] stretch the map on x axis if too wide                     |
+
 
 **Sensors** and **cameras** can be used to detect nearby grids, by adding the tag `[SolarMap]` to the **CustomData** of these blocks.
 The detected entity will be added as GPS point to the list of entities, in order to show these GPS points you need to add
