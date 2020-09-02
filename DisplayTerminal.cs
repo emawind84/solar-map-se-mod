@@ -83,7 +83,10 @@ namespace IngameScript
                 float stretchFactorV = _ini.Get(Program.ScriptPrefixTag, "StretchFactorV").ToSingle(1);
                 float stretchFactorH = _ini.Get(Program.ScriptPrefixTag, "StretchFactorH").ToSingle(stretchFactor);
                 float mapRadius = _ini.Get(Program.ScriptPrefixTag, "MapRadius").ToSingle();
+                float planetScaleFactor = _ini.Get(Program.ScriptPrefixTag, "PlanetScaleFactor").ToSingle(1);
                 bool followGrid = _ini.Get(Program.ScriptPrefixTag, "FollowGrid").ToBoolean();
+                bool displayGrid = _ini.Get(Program.ScriptPrefixTag, "DisplayGrid").ToBoolean();
+
                 Vector3 mapCenterPosition = Vector3.Zero;
                 MyWaypointInfo centerPosition;
                 if (MyWaypointInfo.TryParse(_ini.Get(Program.ScriptPrefixTag, "CenterPosition").ToString(), out centerPosition))
@@ -144,7 +147,7 @@ namespace IngameScript
                         if (displayOrbit)
                         {
                             // Border and fill.
-                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize + 3, lcd.ScriptForegroundColor));
+                            frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize + 3, new Color(lcd.ScriptForegroundColor, 0.2f)));
                             frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, celestialBody.OrbitSize, lcd.ScriptBackgroundColor));
                         }
                     }
@@ -152,7 +155,7 @@ namespace IngameScript
                     // Celestial bodies.
                     foreach (CelestialBody celestialBody in map.Planets)
                     {
-                        celestialBody.PlanetSize = new Vector2(lcd.SurfaceSize.Y * celestialBody.Radius * 0.000001f);
+                        celestialBody.PlanetSize = new Vector2(lcd.SurfaceSize.Y * celestialBody.Radius * 0.000001f * planetScaleFactor);
                         celestialBody.LblTitlePos = new Vector2(celestialBody.PlanetPosition.X, celestialBody.PlanetPosition.Y - 40 - celestialBody.PlanetSize.Y * 0.5f);
                         celestialBody.LblDistancePos = new Vector2(celestialBody.PlanetPosition.X, celestialBody.PlanetPosition.Y - 20 - celestialBody.PlanetSize.Y * 0.5f);
 
@@ -246,10 +249,10 @@ namespace IngameScript
                     }
 
                     if (displaySun)
-                    {
-                        // Drawing the Sun
                         frame.Add(new MySprite(SpriteType.TEXTURE, "Circle", starPosition, new Vector2(lcd.SurfaceSize.Y * map.StarRadius * 0.000001f), Color.Yellow));
-                    }
+
+                    if (displayGrid)
+                        frame.Add(new MySprite(SpriteType.TEXTURE, "Grid"));
 
                 }
             }

@@ -25,7 +25,7 @@
     internal partial class Program : MyGridProgram
     {
 
-        #region CelestialBodies
+        #region mdk preserve
 
         private List<CelestialBody> celestialBodies = new List<CelestialBody>()
         {
@@ -116,8 +116,6 @@
             */
         };
 
-        #endregion
-
         string ScriptPrefixTag = "SolarMap";
 
         string GpsBroadcastTag = "GPS_POS";
@@ -135,6 +133,9 @@
         /// Defines the FREQUENCY.
         /// </summary>
         const UpdateFrequency FREQUENCY = UpdateFrequency.Update100;
+
+        #endregion
+
         /// <summary>
         /// How often the script should update in milliseconds
         /// </summary>
