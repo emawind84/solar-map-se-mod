@@ -197,11 +197,11 @@
         
         const string SCRIPT_NAME = "ED's SolarMap";
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 2, VERSION_REVISION = 0;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 2, VERSION_REVISION = 1;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2020-08-10";
+        const string VERSION_UPDATE = "2020-09-02";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
